@@ -1,52 +1,59 @@
-# Tropico 6 Production Planner – Entwicklungsrepository
+# Tropico 6 Produktionsplaner
 
-> **Status: private Entwicklungs- und Testphase**  
-> Dieses Repository ist nicht das spätere öffentliche Produktrepository. Es enthält Architektur, Recherche und eine intern produktiv geschaltete Testversion für die Kolonialzeit.
+> **Status: öffentliche Beta für die Kolonialzeit**  
+> Die Anwendung wird aktiv entwickelt. Produktionswerte mit unsicherer Quellenlage bleiben erkennbar und können angepasst werden.
 
-## Aktueller Teststand
+## Anwendung
 
-- Version: `v0.1.0-beta.2`
-- Fokus: Kolonialzeit
+[Produktionsplaner öffnen](https://fladchris-company.github.io/tropico6-production-planner-planning/)
+
+## Aktueller Stand
+
+- Version: `v0.2.0-beta`
+- Fokus: ausschließlich Kolonialzeit
 - Grundspiel und koloniale DLC-Produktionsgebäude
-- lokales Speichern im Browser
-- automatische Tests vor jedem Deployment
-- Deployment über GitHub Pages
-- Produktionswerte mit unsicherer Quellenlage bleiben editierbar und werden nicht als gesicherte Werte ausgegeben
+- lokale Speicherung im Browser
+- Import und Export als Sicherung
+- automatische Prüfung vor jeder Veröffentlichung
 
-## Heute testbarer Funktionsumfang
+## Aus Spielersicht
+
+Der Planer soll nicht nur Zahlen zeigen, sondern typische Fragen während einer Partie beantworten:
+
+- Reichen meine Rohstoffe für die vorhandene Industrie?
+- Was fehlt für eine weitere Fabrik?
+- Welche Ware kann ich als Überschuss exportieren?
+- Wie viele zusätzliche Arbeiter benötigt ein Ausbau?
+- Welche Auswirkungen hat eine neue Prognose gegenüber meinem Ist-Stand?
+- Welcher Cluster verursacht voraussichtlich hohen Transportaufwand?
+
+## Funktionsumfang
 
 - mehrere Inselprojekte
 - frei definierbare Cluster
+- schneller Gebäudeeintrag mit Anzahl und Cluster
+- Vorlagen für Rum, Bretter und Leder
 - Gebäude hinzufügen, duplizieren, deaktivieren und entfernen
-- gruppierte Gebäudeanzahlen
-- Effizienz und Personalbesetzung
-- Arbeitsmodi und Verbesserungsvarianten
-- optionale Entfernung pro Gebäude oder Cluster
-- Ist-Stand
-- unabhängige Prognosen
-- Prognosen vergleichen und in den Ist-Stand übernehmen
-- Snapshots erstellen und wiederherstellen
+- Effizienz, Personalbesetzung und Arbeitsmodi
+- optionale Entfernung als verständliche Kategorie
+- unveränderlicher Ist-Stand
+- unabhängige Ausbauprognosen
+- Vergleich zwischen Ist-Stand und Prognose
+- Prognosen übernehmen, kopieren und löschen
+- Produktionsketten mit Versorgungsgrad
+- konkrete Hinweise zu fehlenden Rohstoffgebäuden
 - Produktion, Verbrauch, Restmenge und Fehlmenge je Ware
-- externe Warenversorgung
-- Mindestreserven und exportierbarer Überschuss
+- externe Warenversorgung und Mindestreserven
+- exportierbare Überschüsse
 - Arbeitsplätze und offene Stellen
-- Transportbelastung und geschätzter Transportbüro-Bereich
-- Diagnosehinweise
-- editierbare Ein- und Ausgaberaten je Gebäude
-- DLC-Filter
+- Transportbüros und Transporteinschätzung
+- DLC-Filter für koloniale Produktionsinhalte
 - JSON-Import und -Export
-- Offline-Grundlage als PWA
+- mobile Darstellung und Offline-Grundlage
 
-## Ziel
+## Speicherung
 
-Die Anwendung soll mehr sein als ein Verhältnisrechner. Sie bildet den tatsächlichen Inselstand ab, unterstützt frei definierbare Cluster, ermöglicht Prognosen ohne Veränderung des Ist-Stands und diagnostiziert typische Produktionsprobleme.
-
-Die Anwendung beantwortet vier zentrale Fragen:
-
-- **Planen:** Welche Produktionsgebäude und Rohstoffquellen passen zusammen?
-- **Prognostizieren:** Was verändert sich, wenn Gebäude hinzugefügt, entfernt oder angepasst werden?
-- **Diagnostizieren:** Warum funktioniert eine Produktionskette im tatsächlichen Spielstand nicht wie erwartet?
-- **Stabilisieren:** Ist die Produktion langfristig tragfähig, ausreichend versorgt und logistisch plausibel?
+Inseln und Prognosen werden lokal im jeweiligen Browser gespeichert. Sie sind nicht öffentlich sichtbar und werden nicht an einen Server übertragen. Für Sicherungen und den Wechsel auf ein anderes Gerät steht der JSON-Export zur Verfügung.
 
 ## Dokumentation
 
@@ -65,17 +72,8 @@ Die Anwendung beantwortet vier zentrale Fragen:
 - [Roadmap](docs/12-roadmap.md)
 - [Offene Fragen](docs/13-offene-fragen.md)
 - [Nicht-Ziele](docs/14-nicht-ziele.md)
-- [Veröffentlichung und rechtlicher Rahmen](docs/15-veroeffentlichung.md)
 - [ADR-Verzeichnis](docs/adr/README.md)
-- [Spielerbedürfnisse](docs/research/spielerbeduerfnisse.md)
-- [Quellenregister](docs/research/quellenregister.md)
-- [Ideen-Backlog](docs/notes/ideen-backlog.md)
-- [Entscheidungsprotokoll](docs/notes/entscheidungsprotokoll.md)
 
-## Deployment
+## Hinweis
 
-Der Workflow rekonstruiert den geprüften Release-Stand, führt die Berechnungstests und Syntaxprüfungen aus und veröffentlicht anschließend ausschließlich die statische Webanwendung.
-
-## Arbeitsregel
-
-Entscheidungen werden nicht stillschweigend überschrieben. Wesentliche technische oder fachliche Festlegungen erhalten einen Architecture Decision Record. Noch ungesicherte Annahmen werden ausdrücklich als Annahme oder offene Frage gekennzeichnet.
+Tropico 6 und die zugehörigen Bezeichnungen sind Eigentum der jeweiligen Rechteinhaber. Dieses Projekt ist ein unabhängiges, nicht offizielles Fan-Werkzeug.
