@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Tip from './Tip.svelte';
-  import { BUILDINGS, GOODS } from '$lib/domain/data';
-  import { calculateScenario, fmt } from '$lib/domain/core';
+  import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra } from '$lib/domain/data';
+  import { calculateEntryPerformance, calculateScenario, fmt } from '$lib/domain/core';
   import { load, newEntry, save, seed } from '$lib/domain/storage';
   import type { Database, Entry } from '$lib/domain/types';
 
@@ -12,8 +12,10 @@
 
   $: project = db.projects.find((item) => item.id === db.activeProjectId) ?? db.projects[0];
   $: scenario = project?.scenarios.find((item) => item.id === project.selectedId) ?? project?.scenarios[0];
-  $: allowedBuildings = BUILDINGS.filter((item) => item.dlc === 'base' || project?.dlcs.includes(item.dlc));
-  $: result = scenario ? calculateScenario({ scenario, buildings: allowedBuildings, goods: GOODS, settings: db.settings }) : null;
+  $: currentEra = ERAS.find((item) => item.id === project?.era) ?? ERAS[0];
+  $: allowedBuildings = BUILDINGS.filter((item) => (item.dlc === 'base' || project?.dlcs.includes(item.dlc)) && buildingAvailableInEra(item, project?.era ?? 'colonial'));
+  $: visibleEntries = scenario?.entries.filter((entry) => allowedBuildings.some((item) => item.id === entry.buildingId)) ?? [];
+  $: result = scenario ? calculateScenario({ scenario, buildings: allowedBuildings, goods: GOODS, settings: db.settings, era: project?.era }) : null;
 
   onMount(() => {
     db = load();
@@ -48,6 +50,27 @@
     scenario.entries = scenario.entries.filter((entry) => entry.id !== id);
     commit();
   }
+
+  function performance(entry: Entry) {
+    const selected = building(entry.buildingId);
+    const value = calculateEntryPerformance({entry, building:selected, era:project.era, settings:db.settings});
+    if (selected.kind === 'teamster') {
+      return {
+        label: `${fmt(value.transportCapacity)} Transportkapazität`,
+        tooltip: `Berechnung: ${fmt(entry.count,0)} × ${selected.workers} Arbeiter × ${fmt(entry.staffing,0)} % Besetzung × ${value.loadPerTrip} Ladung × ${fmt(entry.efficiency,0)} % Effizienz × ${fmt(value.modeFactor,2)} Arbeitsmodus × ${fmt(db.settings.transportTripsPerWorker,0)} Fahrten = ${fmt(value.transportCapacity)} Transportkapazität.`
+      };
+    }
+    if (!value.calculable) return {label:'Werte fehlen',tooltip:'Für dieses Gebäude fehlen noch belastbare Produktionswerte.'};
+    const inputLabel=Object.entries(value.inputs).map(([good,amount])=>`−${fmt(amount)} ${GOODS[good]?.name??good}`).join(', ');
+    const outputLabel=Object.entries(value.outputs).map(([good,amount])=>`+${fmt(amount)} ${GOODS[good]?.name??good}`).join(', ');
+    const formula=(source:Record<string,number|null>,sign:string)=>Object.entries(source).map(([good,rate])=>`${fmt(entry.count,0)} × ${fmt(Number(rate)*selected.workers)} ${GOODS[good]?.name??good} × ${fmt(entry.efficiency,0)} % = ${sign}${fmt(Number(rate)*selected.workers*entry.count*entry.efficiency/100)} ${GOODS[good]?.name??good}`).join('; ');
+    const inputFormula=formula(value.mode.inputs,'−');
+    const outputFormula=formula(value.mode.outputs,'+');
+    return {
+      label:[inputLabel,outputLabel].filter(Boolean).join(' → '),
+      tooltip:`Berechnung: Anzahl × Basiswert je Gebäude × Effizienz. ${[inputFormula,outputFormula].filter(Boolean).join('; ')} pro Berechnungsperiode.`
+    };
+  }
 </script>
 
 {#if ready && project && scenario && result}
@@ -55,7 +78,7 @@
     <header class="app-header">
       <div>
         <span class="product">Tropico 6 Produktionsplaner</span>
-        <span class="era">Kolonialzeit</span>
+        <label class="era-select"><span class="visually-hidden">Zeitalter</span><select aria-label="Zeitalter" bind:value={project.era} onchange={commit}>{#each ERAS as era}<option value={era.id}>{era.name}</option>{/each}</select></label>
       </div>
       <nav aria-label="Hauptnavigation">
         <button class:active={tab === 'overview'} onclick={() => (tab = 'overview')}>Übersicht</button>
@@ -80,7 +103,7 @@
             {:else}<p>Kein exportierbarer Überschuss.</p>{/if}
           </section>
           <section class="summary">
-            <h2>Transport <Tip text="Näherungsmodell: Zu transportieren sind alle erzeugten und importierten Waren; Fabrikeingänge werden nicht doppelt gezählt. Die Kapazität ergibt sich aus besetzten Transportarbeiterstellen × 500 Einheiten Ladung × Effizienz × Arbeitsmodus × angenommenen zwei Fahrten. Reale Werte können durch Entfernungen, Verkehr, Rückwege, Wohnort, Bedürfnisse und abwesende Arbeiter deutlich abweichen." /></h2>
+            <h2>Transport <Tip text={`Näherungsmodell für ${currentEra.name}: Zu transportieren sind alle erzeugten und importierten Waren; Fabrikeingänge werden nicht doppelt gezählt. Die Kapazität ergibt sich aus besetzten Transportarbeiterstellen × ${currentEra.loadPerTrip} Einheiten Ladung × Effizienz × Arbeitsmodus × angenommenen zwei Fahrten. Reale Werte können durch Entfernungen, Verkehr, Rückwege, Wohnort, Bedürfnisse und abwesende Arbeiter deutlich abweichen.`} /></h2>
             <p class="model-unit">Einheiten je Standardarbeitsschicht</p>
             <dl><div><dt>Theoretisch zu transportieren</dt><dd>{fmt(result.transportDemand)}</dd></div><div><dt>Theoretisch transportierbar</dt><dd>{fmt(result.transportCapacity)}</dd></div><div><dt>Differenz</dt><dd class:deficit={result.transportDifference < 0}>{result.transportDifference > 0 ? '+' : ''}{fmt(result.transportDifference)}</dd></div><div><dt>Empfehlung</dt><dd>{result.teamsterOfficeDifference > 0 ? `${fmt(result.teamsterOfficeDifference, 0)} mehr bauen` : result.teamsterOfficeDifference < 0 ? `${fmt(Math.abs(result.teamsterOfficeDifference), 0)} weniger möglich` : 'Anzahl passt'}</dd></div></dl>
           </section>
@@ -104,18 +127,20 @@
 
         <div class="building-list">
           <table>
-            <thead><tr><th>Gebäude</th><th>Anzahl</th><th>Effizienz</th><th>Arbeitsmodus</th><th><span class="visually-hidden">Aktionen</span></th></tr></thead>
+            <thead><tr><th>Gebäude</th><th>Anzahl</th><th>Effizienz</th><th>Arbeitsmodus</th><th>Leistung</th><th><span class="visually-hidden">Aktionen</span></th></tr></thead>
             <tbody>
-              {#each scenario.entries as entry (entry.id)}
+              {#each visibleEntries as entry (entry.id)}
                 {@const selected = building(entry.buildingId)}
+                {@const rowPerformance = performance(entry)}
                 <tr>
                   <td><select aria-label="Gebäude" bind:value={entry.buildingId} onchange={() => changeBuilding(entry)}>{#each allowedBuildings as option}<option value={option.id}>{option.name}</option>{/each}</select></td>
                   <td><input aria-label={`Anzahl ${selected.name}`} type="number" min="0" step="1" value={entry.count} oninput={(event) => { entry.count = Number(event.currentTarget.value); commit(); }} /></td>
                   <td><label class="percent-input"><span class="visually-hidden">Effizienz {selected.name}</span><input type="number" min="0" max="500" step="1" value={entry.efficiency} oninput={(event) => { entry.efficiency = Number(event.currentTarget.value); commit(); }} /><span>%</span></label></td>
                   <td><select aria-label={`Arbeitsmodus ${selected.name}`} bind:value={entry.modeId} onchange={commit}>{#each selected.modes as mode}<option value={mode.id}>{mode.name}</option>{/each}</select></td>
+                  <td class="performance-cell"><span>{rowPerformance.label}</span><Tip text={rowPerformance.tooltip} /></td>
                   <td class="actions"><button class="delete-button" onclick={() => removeBuilding(entry.id)}>Löschen</button></td>
                 </tr>
-              {:else}<tr><td class="empty" colspan="5">Noch keine Gebäude eingetragen.</td></tr>{/each}
+              {:else}<tr><td class="empty" colspan="6">Noch keine Gebäude für dieses Zeitalter eingetragen.</td></tr>{/each}
             </tbody>
           </table>
         </div>
@@ -133,7 +158,8 @@
   .app-header { height: 58px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; border-bottom: 1px solid #cfd5d9; background: #fff; }
   .app-header > div { display: flex; align-items: center; gap: 12px; }
   .product { font-size: 14px; font-weight: 700; }
-  .era { padding-left: 12px; border-left: 1px solid #cfd5d9; color: #687178; font-size: 13px; }
+  .era-select { padding-left: 12px; border-left: 1px solid #cfd5d9; }
+  .era-select select { width: auto; min-width: 132px; height: 32px; padding: 0 28px 0 8px; border-color: #c3cbd0; font-size: 13px; }
   nav { align-self: stretch; display: flex; gap: 6px; }
   nav button { padding: 0 16px; border-bottom: 3px solid transparent; background: transparent; color: #5c676d; font-size: 14px; }
   nav button.active { border-bottom-color: #24353f; color: #1f2529; font-weight: 700; }
@@ -162,22 +188,24 @@
   .notices article:first-child { padding-top: 0; }
   .notices article:last-child { border-bottom: 0; }
   .notices strong { font-size: 14px; }
-  table { width: 100%; min-width: 760px; border-collapse: collapse; }
+  table { width: 100%; min-width: 1000px; border-collapse: collapse; }
   th { padding: 11px 14px; border-bottom: 1px solid #cbd2d6; background: #eef1f2; color: #536068; font-size: 12px; font-weight: 700; letter-spacing: .02em; text-align: left; text-transform: uppercase; }
   td { padding: 10px 14px; border-bottom: 1px solid #e1e5e7; }
   tbody tr:last-child td { border-bottom: 0; }
   tbody tr:hover { background: #fafbfb; }
   input, select { width: 100%; height: 36px; padding: 0 10px; border: 1px solid #b9c2c7; border-radius: 0; background: #fff; color: #1f2529; }
   input:focus, select:focus { border-color: #506d7c; outline: 2px solid rgba(80, 109, 124, .16); outline-offset: 0; }
-  td:nth-child(1) { width: 42%; }
-  td:nth-child(2) { width: 110px; }
-  td:nth-child(3) { width: 150px; }
-  td:nth-child(4) { width: 230px; }
+  td:nth-child(1) { width: 30%; }
+  td:nth-child(2) { width: 100px; }
+  td:nth-child(3) { width: 140px; }
+  td:nth-child(4) { width: 200px; }
+  td:nth-child(5) { width: 300px; }
   .percent-input { display: flex; align-items: center; border: 1px solid #b9c2c7; background: #fff; }
   .percent-input:focus-within { border-color: #506d7c; outline: 2px solid rgba(80, 109, 124, .16); }
   .percent-input input { border: 0; outline: 0; }
   .percent-input span:last-child { padding-right: 10px; color: #677178; }
   .actions { width: 90px; text-align: right; }
+  .performance-cell { color: #26343b; font-size: 13px; white-space: nowrap; }
   .delete-button { padding: 6px 0; background: transparent; color: #8a3131; font-size: 13px; }
   .delete-button:hover { text-decoration: underline; }
   .empty { padding: 32px; color: #69737a; text-align: center; }

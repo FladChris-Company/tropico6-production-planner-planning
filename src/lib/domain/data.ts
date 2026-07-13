@@ -1,4 +1,14 @@
-import type { Building, Settings } from './types';
+import type { Building, Era, Settings } from './types';
+
+export const ERAS: { id: Era; name: string; loadPerTrip: number }[] = [
+  {id:'colonial',name:'Kolonialzeit',loadPerTrip:500},
+  {id:'world-wars',name:'Weltkriege',loadPerTrip:800},
+  {id:'cold-war',name:'Kalter Krieg',loadPerTrip:800},
+  {id:'modern',name:'Moderne',loadPerTrip:1200}
+];
+
+const ERA_ORDER: Era[] = ERAS.map(era=>era.id);
+export const buildingAvailableInEra = (building: Building, era: Era) => ERA_ORDER.indexOf(building.availableFrom??'colonial')<=ERA_ORDER.indexOf(era);
 
 export const GOODS: Record<string, { name: string; icon: string }> = {
   banana:{name:'Bananen',icon:'🍌'}, cocoa:{name:'Kakao',icon:'🫘'}, coffee:{name:'Kaffee',icon:'☕'}, corn:{name:'Mais',icon:'🌽'}, cotton:{name:'Baumwolle',icon:'☁️'},

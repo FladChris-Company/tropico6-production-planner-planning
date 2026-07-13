@@ -8,6 +8,7 @@ Attribute:
 
 - ID
 - Name
+- ausgewähltes Zeitalter
 - Spielversion
 - aktivierte DLCs
 - Erstellungsdatum

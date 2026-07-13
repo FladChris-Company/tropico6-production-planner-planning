@@ -1,8 +1,8 @@
 # Umfang der Kolonialzeit
 
-## Verbindlicher Scope
+## Verbindlicher Startumfang
 
-Die erste fachliche Version behandelt ausschließlich Inhalte, die in der Kolonialzeit nutzbar oder für kolonialzeitliche Produktion relevant sind.
+Die erste verifizierte Datenbasis behandelt Inhalte, die in der Kolonialzeit nutzbar oder für kolonialzeitliche Produktion relevant sind. Die Anwendung selbst unterstützt bereits die Auswahl aller vier Zeitalter. Gebäudedefinitionen erhalten ein Freischaltzeitalter; frühere Gebäude bleiben in späteren Zeitaltern verfügbar.
 
 Enthalten werden:
 
@@ -20,13 +20,11 @@ Enthalten werden:
 - Häfen und Lager, soweit produktionsrelevant
 - externe Warenquellen wie Import oder Beute als optionale Versorgung
 
-## Abgrenzung
+## Abgrenzung der Datenbasis
 
 Nicht enthalten sind zunächst:
 
-- Weltkriegszeit
-- Kalter Krieg
-- Moderne
+- noch nicht verifizierte Produktionsgebäude aus Weltkriegen, Kaltem Krieg und Moderne
 - vollständige Einwohnerbedarfsplanung
 - Wohnungsplanung
 - Politik und Fraktionen

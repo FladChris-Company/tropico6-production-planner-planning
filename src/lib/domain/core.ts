@@ -1,4 +1,4 @@
-import type { Building, Scenario, Settings } from './types';
+import type { Building, Era, Entry, Scenario, Settings } from './types';
 
 type Rates = Record<string, number>;
 type Prepared = { entry: Scenario['entries'][number]; building: Building; mode: Building['modes'][number]; count:number; expectedFactor:number; theoreticalFactor:number; rates:{inputs:Rates;outputs:Rates}; calculable:boolean };
@@ -6,7 +6,7 @@ type Prepared = { entry: Scenario['entries'][number]; building: Building; mode: 
 export const clamp = (value: unknown, min: number, max: number) => Math.min(max, Math.max(min, Number(value) || 0));
 export const fmt = (value:number, digits=1) => Number(value || 0).toLocaleString('de-DE',{maximumFractionDigits:digits});
 
-const COLONIAL_LOAD_PER_TRIP = 500;
+const LOAD_PER_TRIP_BY_ERA: Record<Era, number> = {colonial:500,'world-wars':800,'cold-war':800,modern:1200};
 const TEAMSTER_MODE_FACTORS: Record<string, number> = { standard: 1, 'loose-load': 1.35 };
 
 export function distanceFactor(entry: Prepared['entry'], scenario: Scenario) {
@@ -18,6 +18,23 @@ export function distanceFactor(entry: Prepared['entry'], scenario: Scenario) {
 function rates(entry:Prepared['entry'], mode:Building['modes'][number]) {
   const normalize=(source:Record<string,number|null>, overrides:Record<string,number|''>) => Object.fromEntries(Object.entries(source).map(([id,rate])=>[id,overrides[id] === '' || overrides[id] == null ? rate : Number(overrides[id])]));
   return {inputs:normalize(mode.inputs,entry.rateOverrides?.inputs ?? {}),outputs:normalize(mode.outputs,entry.rateOverrides?.outputs ?? {})};
+}
+
+export function calculateEntryPerformance({entry,building,era='colonial',settings}:{entry:Entry;building:Building;era?:Era;settings:Settings}) {
+  const mode=building.modes.find(item=>item.id===entry.modeId)??building.modes[0];
+  const normalized=rates(entry,mode);
+  const calculable=[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(value=>value!=null&&Number.isFinite(Number(value)));
+  const count=Math.max(0,Number(entry.count)||0);
+  const efficiency=clamp(entry.efficiency,0,500)/100;
+  const factor=count*building.workers*efficiency;
+  const scale=(source:Record<string,number|null>)=>Object.fromEntries(Object.entries(source).map(([id,value])=>[id,Number(value)*factor])) as Rates;
+  const inputs=calculable?scale(normalized.inputs):{};
+  const outputs=calculable?scale(normalized.outputs):{};
+  const staffing=clamp(entry.staffing,0,100)/100;
+  const transportCapacity=building.kind==='teamster'
+    ? count*building.workers*staffing*LOAD_PER_TRIP_BY_ERA[era]*efficiency*(TEAMSTER_MODE_FACTORS[mode.id]??1)*Math.max(0,settings.transportTripsPerWorker)
+    : 0;
+  return {mode,calculable,inputs,outputs,transportCapacity,loadPerTrip:LOAD_PER_TRIP_BY_ERA[era],modeFactor:TEAMSTER_MODE_FACTORS[mode.id]??1};
 }
 
 function bestSource(buildings:Building[], goodId:string) {
@@ -36,16 +53,16 @@ function bestProducer(buildings:Building[],goodId:string) {
   return choices.sort((a,b)=>(a.dlc==='base'?0:1)-(b.dlc==='base'?0:1)||a.stage-b.stage||b.outputPerBuilding-a.outputPerBuilding)[0]??null;
 }
 
-export function calculateScenario({scenario,buildings,goods,settings}:{scenario:Scenario;buildings:Building[];goods:Record<string,{name:string}>;settings:Settings}) {
+export function calculateScenario({scenario,buildings,goods,settings,era='colonial'}:{scenario:Scenario;buildings:Building[];goods:Record<string,{name:string}>;settings:Settings;era?:Era}) {
   const buildingMap=new Map(buildings.map(item=>[item.id,item]));
   const pool:Rates={}, produced:Rates={}, consumed:Rates={}, unmet:Rates={}, external:Rates={};
   const prepared:Prepared[]=[];
-  let totalBuildings=0,plannedBuildings=0,totalJobs=0,filledJobs=0,unknownEntries=0,teamsterOffices=0,transportCapacity=0;
+  let totalBuildings=0,plannedBuildings=0,totalJobs=0,filledJobs=0,unknownEntries=0,teamsterOffices=0,transportDemand=0,transportCapacity=0;
   const educationJobs:Record<string,number>={'uneducated':0,'high-school':0,'college':0};
   const educationFilled:Record<string,number>={'uneducated':0,'high-school':0,'college':0};
 
   for(const [goodId,policy] of Object.entries(scenario.policies ?? {})) {
-    const amount=Math.max(0,Number(policy.externalSupply)||0); pool[goodId]=(pool[goodId]??0)+amount; external[goodId]=amount;
+    const amount=Math.max(0,Number(policy.externalSupply)||0); pool[goodId]=(pool[goodId]??0)+amount; external[goodId]=amount; transportDemand+=amount;
   }
   for(const entry of scenario.entries.filter(e=>e.status!=='disabled'&&Number(e.count)>0)) {
     const building=buildingMap.get(entry.buildingId); if(!building) continue;
@@ -53,19 +70,18 @@ export function calculateScenario({scenario,buildings,goods,settings}:{scenario:
     const count=Math.max(0,Number(entry.count)||0), efficiency=clamp(entry.efficiency,0,500)/100, staffing=clamp(entry.staffing,0,100)/100;
     const normalized=rates(entry,mode) as {inputs:Rates;outputs:Rates};
     const calculable=[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(v=>v!=null&&Number.isFinite(Number(v)));
+    const performance=calculateEntryPerformance({entry,building,era,settings});
     totalBuildings+=count; if(entry.status==='planned') plannedBuildings+=count;
     totalJobs+=count*building.workers; filledJobs+=count*building.workers*staffing;
     educationJobs[building.education]=(educationJobs[building.education]??0)+count*building.workers;
     educationFilled[building.education]=(educationFilled[building.education]??0)+count*building.workers*staffing;
     if(building.kind==='teamster') {
       teamsterOffices+=count;
-      const occupiedWorkers=count*building.workers*staffing;
-      const loadPerTrip=COLONIAL_LOAD_PER_TRIP*efficiency;
-      const modeFactor=TEAMSTER_MODE_FACTORS[mode.id]??1;
-      transportCapacity+=occupiedWorkers*loadPerTrip*modeFactor*Math.max(0,settings.transportTripsPerWorker);
+      transportCapacity+=performance.transportCapacity;
     }
+    if(building.kind==='production'&&performance.calculable) transportDemand+=Object.values(performance.outputs).reduce((sum,value)=>sum+value,0);
     if(!calculable&&building.kind==='production') unknownEntries+=count;
-    prepared.push({entry,building,mode,count,theoreticalFactor:count*building.workers*efficiency*staffing,expectedFactor:count*building.workers*efficiency*staffing*settings.worktimeFactor*settings.logisticsFactor,rates:normalized,calculable});
+    prepared.push({entry,building,mode,count,theoreticalFactor:count*building.workers*efficiency,expectedFactor:count*building.workers*efficiency*staffing*settings.worktimeFactor*settings.logisticsFactor,rates:normalized,calculable});
   }
 
   const entryResults: {entryId:string;buildingId:string;utilization:number;inputs:Rates;outputs:Rates;missing:Rates;calculable:boolean;theoreticalOutputs:Rates}[]=[];
@@ -93,10 +109,9 @@ export function calculateScenario({scenario,buildings,goods,settings}:{scenario:
     const extraExact=inputs.length?Math.min(...inputs.map(i=>i.perBuildingDemand?i.leftover/i.perBuildingDemand:0)):0;
     return {entryId:item.entry.id,buildingId:item.building.id,buildingName:item.building.name,modeName:item.mode.name,count:item.count,utilization:result.utilization,inputs,outputs:Object.entries(result.outputs).map(([goodId,amount])=>({goodId,amount})),additionalWholeBuildings:Math.max(0,Math.floor(extraExact+1e-9))};
   });
-  const transportDemand=Object.values(produced).reduce((sum,value)=>sum+value,0)+Object.values(external).reduce((sum,value)=>sum+value,0);
   const transportDifference=transportCapacity-transportDemand;
   const transportUtilization=transportCapacity>0?transportDemand/transportCapacity*100:null;
-  const referenceOfficeCapacity=6*COLONIAL_LOAD_PER_TRIP*Math.max(0,settings.transportTripsPerWorker);
+  const referenceOfficeCapacity=6*LOAD_PER_TRIP_BY_ERA[era]*Math.max(0,settings.transportTripsPerWorker);
   const requiredTeamsterOffices=transportDemand>0&&referenceOfficeCapacity>0?Math.ceil(transportDemand/referenceOfficeCapacity):0;
   const teamsterOfficeDifference=requiredTeamsterOffices-teamsterOffices;
   const diagnostics:{severity:'success'|'warning'|'error';title:string;detail:string;action?:string}[]=[];

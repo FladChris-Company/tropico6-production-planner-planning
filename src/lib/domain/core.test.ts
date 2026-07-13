@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BUILDINGS, DEFAULT_SETTINGS, GOODS } from './data';
+import { BUILDINGS, DEFAULT_SETTINGS, GOODS, buildingAvailableInEra } from './data';
 import { calculateScenario, goalRequirements } from './core';
 import type { Entry, Scenario } from './types';
 
@@ -65,9 +65,19 @@ describe('Kolonialzeit-Berechnung',()=>{
 
   it('zählt für den Transportbedarf nur Ausgaben und keine Fabrikeingänge doppelt',()=>{
     const result=calculate([entry('sugar','plantation-sugar',2),entry('rum','rum-distillery',1,'dunder')]);
-    const produced=result.balances.reduce((sum,item)=>sum+item.produced,0);
-    expect(result.transportDemand).toBeCloseTo(produced);
+    expect(result.transportDemand).toBeCloseTo(38);
     expect(result.requiredTeamsterOffices).toBe(1);
     expect(result.teamsterOfficeDifference).toBe(1);
+  });
+
+  it('verwendet die Ladekapazität des gewählten Zeitalters',()=>{
+    const modern=calculateScenario({scenario:scenario([entry('teamster','teamster-office',1)]),buildings:BUILDINGS,goods:GOODS,settings:DEFAULT_SETTINGS,era:'modern'});
+    expect(modern.transportCapacity).toBe(14400);
+  });
+
+  it('blendet Gebäude vor ihrem Freischaltzeitalter aus',()=>{
+    const modernBuilding={...BUILDINGS[0],availableFrom:'modern' as const};
+    expect(buildingAvailableInEra(modernBuilding,'colonial')).toBe(false);
+    expect(buildingAvailableInEra(modernBuilding,'modern')).toBe(true);
   });
 });

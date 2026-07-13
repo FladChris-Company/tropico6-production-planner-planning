@@ -1,6 +1,7 @@
 export type DataStatus = 'verified' | 'estimated' | 'unknown' | 'model';
 export type EntryStatus = 'existing' | 'planned' | 'disabled';
 export type Severity = 'success' | 'warning' | 'error';
+export type Era = 'colonial' | 'world-wars' | 'cold-war' | 'modern';
 
 export interface Mode {
   id: string;
@@ -21,6 +22,7 @@ export interface Building {
   stage: number;
   dataStatus: DataStatus;
   source: string;
+  availableFrom?: Era;
   modes: Mode[];
 }
 
@@ -50,6 +52,7 @@ export interface Scenario {
 export interface Project {
   id: string;
   name: string;
+  era: Era;
   dlcs: string[];
   currentId: string;
   selectedId: string;
