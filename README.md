@@ -1,5 +1,8 @@
 # Tropico 6 Produktionsplaner
 
+Work in Progress
+-> aus meinen .xlsx dateien eine webanwendung mit KI erstellen
+
 > **Status: produktiv nutzbare Version für die Kolonialzeit**
 > Produktionswerte mit unsicherer Quellenlage bleiben erkennbar und können direkt angepasst werden.
 
