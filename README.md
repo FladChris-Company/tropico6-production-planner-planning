@@ -1,26 +1,45 @@
-# Tropico 6 Production Planner – Planning Repository
+# Tropico 6 Production Planner – Entwicklungsrepository
 
-> **Status: private Entwicklungs- und Architekturphase**  
-> Dieses Repository enthält bewusst **keinen Anwendungscode**. Es dient ausschließlich dazu, Produktumfang, Fachmodell, Architekturentscheidungen, Recherche, Annahmen und offene Fragen nachvollziehbar zu dokumentieren.
+> **Status: private Entwicklungs- und Testphase**  
+> Dieses Repository ist nicht das spätere öffentliche Produktrepository. Es enthält Architektur, Recherche und eine intern produktiv geschaltete Testversion für die Kolonialzeit.
+
+## Aktueller Teststand
+
+- Version: `v0.1.0-beta.2`
+- Fokus: Kolonialzeit
+- Grundspiel und koloniale DLC-Produktionsgebäude
+- lokales Speichern im Browser
+- automatische Tests vor jedem Deployment
+- Deployment über GitHub Pages
+- Produktionswerte mit unsicherer Quellenlage bleiben editierbar und werden nicht als gesicherte Werte ausgegeben
+
+## Heute testbarer Funktionsumfang
+
+- mehrere Inselprojekte
+- frei definierbare Cluster
+- Gebäude hinzufügen, duplizieren, deaktivieren und entfernen
+- gruppierte Gebäudeanzahlen
+- Effizienz und Personalbesetzung
+- Arbeitsmodi und Verbesserungsvarianten
+- optionale Entfernung pro Gebäude oder Cluster
+- Ist-Stand
+- unabhängige Prognosen
+- Prognosen vergleichen und in den Ist-Stand übernehmen
+- Snapshots erstellen und wiederherstellen
+- Produktion, Verbrauch, Restmenge und Fehlmenge je Ware
+- externe Warenversorgung
+- Mindestreserven und exportierbarer Überschuss
+- Arbeitsplätze und offene Stellen
+- Transportbelastung und geschätzter Transportbüro-Bereich
+- Diagnosehinweise
+- editierbare Ein- und Ausgaberaten je Gebäude
+- DLC-Filter
+- JSON-Import und -Export
+- Offline-Grundlage als PWA
 
 ## Ziel
 
-Geplant ist eine lokale, installierbare Webanwendung zur Planung und Analyse von Produktionssystemen in **Tropico 6**. Der erste fachliche Fokus liegt ausschließlich auf der **Kolonialzeit**, inklusive relevanter DLC-Inhalte.
-
-Die Anwendung soll mehr sein als ein Verhältnisrechner. Sie soll den tatsächlichen Inselstand abbilden, frei definierbare Cluster unterstützen, Prognosen ohne Veränderung des Ist-Stands ermöglichen und typische Produktionsprobleme diagnostizieren.
-
-## Aktueller Projektzustand
-
-- Konzeptphase
-- Architekturphase
-- Datenrecherche noch nicht abgeschlossen
-- Produktionswerte noch nicht vollständig verifiziert
-- keine Implementierung
-- kein finaler Produktname
-- keine öffentliche Veröffentlichung
-- keine finale Lizenzentscheidung
-
-## Kernidee
+Die Anwendung soll mehr sein als ein Verhältnisrechner. Sie bildet den tatsächlichen Inselstand ab, unterstützt frei definierbare Cluster, ermöglicht Prognosen ohne Veränderung des Ist-Stands und diagnostiziert typische Produktionsprobleme.
 
 Die Anwendung beantwortet vier zentrale Fragen:
 
@@ -52,6 +71,10 @@ Die Anwendung beantwortet vier zentrale Fragen:
 - [Quellenregister](docs/research/quellenregister.md)
 - [Ideen-Backlog](docs/notes/ideen-backlog.md)
 - [Entscheidungsprotokoll](docs/notes/entscheidungsprotokoll.md)
+
+## Deployment
+
+Der Workflow rekonstruiert den geprüften Release-Stand, führt die Berechnungstests und Syntaxprüfungen aus und veröffentlicht anschließend ausschließlich die statische Webanwendung.
 
 ## Arbeitsregel
 
