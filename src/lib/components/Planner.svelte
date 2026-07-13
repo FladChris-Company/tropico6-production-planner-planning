@@ -1,130 +1,191 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Tip from './Tip.svelte';
-  import { BUILDINGS, DEFAULT_SETTINGS, DLCS, GOODS, PROFILES } from '$lib/domain/data';
-  import { calculateScenario, compareResults, fmt, goalRequirements } from '$lib/domain/core';
-  import { cloneScenario, load, newEntry, newProject, save, seed, uid } from '$lib/domain/storage';
-  import type { Database, Entry, Scenario } from '$lib/domain/types';
+  import { BUILDINGS, GOODS } from '$lib/domain/data';
+  import { calculateScenario, fmt } from '$lib/domain/core';
+  import { load, newEntry, save, seed } from '$lib/domain/storage';
+  import type { Database, Entry } from '$lib/domain/types';
 
-  type Tab='overview'|'buildings'|'balance'|'planning'|'settings';
-  let ready=false,db:Database=seed(),tab:Tab='overview',selectedEntryId='',search='',category='Alle',savedAt='',showMobileNav=false;
-  let goalBuilding='rum-distillery',goalMode='dunder',goalCount=1,importInput:HTMLInputElement;
+  let ready = false;
+  let db: Database = seed();
+  let tab: 'overview' | 'buildings' = 'overview';
 
-  $: project=db.projects.find(p=>p.id===db.activeProjectId)??db.projects[0];
-  $: scenario=project?.scenarios.find(s=>s.id===project.selectedId)??project?.scenarios[0];
-  $: allowedBuildings=BUILDINGS.filter(b=>b.dlc==='base'||project?.dlcs.includes(b.dlc));
-  $: result=scenario?calculateScenario({scenario,buildings:allowedBuildings,goods:GOODS,settings:db.settings}):null;
-  $: currentScenario=project?.scenarios.find(s=>s.id===project.currentId);
-  $: currentResult=currentScenario?calculateScenario({scenario:currentScenario,buildings:allowedBuildings,goods:GOODS,settings:db.settings}):null;
-  $: comparison=scenario?.type==='forecast'&&currentResult&&result?compareResults(currentResult,result):null;
-  $: selectedEntry=scenario?.entries.find(e=>e.id===selectedEntryId);
-  $: selectedBuilding=selectedEntry?BUILDINGS.find(b=>b.id===selectedEntry.buildingId):null;
-  $: categories=['Alle',...new Set(allowedBuildings.map(b=>b.category))];
-  $: visibleEntries=scenario?.entries.filter(e=>{const b=BUILDINGS.find(x=>x.id===e.buildingId);return b&&(category==='Alle'||b.category===category)&&(!search||b.name.toLowerCase().includes(search.toLowerCase()));})??[];
-  $: goalBuildingData=allowedBuildings.find(b=>b.id===goalBuilding)??allowedBuildings[0];
-  $: goalRows=goalBuildingData&&goalBuildingData.dataStatus!=='unknown'?goalRequirements(goalBuildingData.id,goalCount,goalMode,allowedBuildings,db.settings,GOODS):[];
+  $: project = db.projects.find((item) => item.id === db.activeProjectId) ?? db.projects[0];
+  $: scenario = project?.scenarios.find((item) => item.id === project.selectedId) ?? project?.scenarios[0];
+  $: allowedBuildings = BUILDINGS.filter((item) => item.dlc === 'base' || project?.dlcs.includes(item.dlc));
+  $: result = scenario ? calculateScenario({ scenario, buildings: allowedBuildings, goods: GOODS, settings: db.settings }) : null;
 
-  onMount(()=>{db=load();ready=true;savedAt=new Date(db.updatedAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});});
-  function commit(){db={...db};save(db);savedAt=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
-  function switchTab(next:Tab){tab=next;showMobileNav=false;}
-  function building(id:string){return BUILDINGS.find(b=>b.id===id)!;}
-  function mode(entry:Entry){const b=building(entry.buildingId);return b.modes.find(m=>m.id===entry.modeId)??b.modes[0];}
-  function entryResult(id:string){return result?.entryResults.find(x=>x.entryId===id);}
-  function addBuilding(){const first=allowedBuildings.find(b=>b.kind==='production')??allowedBuildings[0];const entry=newEntry(first.id,scenario.clusters[0].id,scenario.type==='forecast'?'planned':'existing');entry.modeId=first.modes[0].id;scenario.entries.push(entry);selectedEntryId=entry.id;commit();}
-  function changeBuilding(entry:Entry){const b=building(entry.buildingId);entry.modeId=b.modes[0].id;entry.rateOverrides={inputs:{},outputs:{}};commit();}
-  function removeEntry(id:string){scenario.entries=scenario.entries.filter(e=>e.id!==id);if(selectedEntryId===id)selectedEntryId='';commit();}
-  function duplicateEntry(entry:Entry){scenario.entries.push({...structuredClone(entry),id:uid('entry')});commit();}
-  function addCluster(){scenario.clusters.push({id:uid('cluster'),name:'Neuer Cluster',distance:''});commit();}
-  function deleteCluster(id:string){if(scenario.clusters.length<2)return;const target=scenario.clusters.find(c=>c.id!==id)!;scenario.entries.forEach(e=>{if(e.clusterId===id)e.clusterId=target.id});scenario.clusters=scenario.clusters.filter(c=>c.id!==id);commit();}
-  function addForecast(){const name=prompt('Name der Ausbauprognose','Ausbauvariante');if(!name)return;const copy=cloneScenario(scenario,name);project.scenarios.push(copy);project.selectedId=copy.id;selectedEntryId='';commit();tab='planning';}
-  function deleteForecast(){if(scenario.type!=='forecast'||!confirm(`„${scenario.name}“ wirklich löschen?`))return;project.scenarios=project.scenarios.filter(s=>s.id!==scenario.id);project.selectedId=project.currentId;commit();}
-  function applyForecast(){if(scenario.type!=='forecast'||!confirm('Diese Prognose als neuen Ist-Stand übernehmen?'))return;const target=project.scenarios.find(s=>s.id===project.currentId)!;const copy=structuredClone(scenario);target.clusters=copy.clusters;target.entries=copy.entries.map(e=>({...e,status:e.status==='planned'?'existing':e.status}));target.policies=copy.policies;project.selectedId=target.id;commit();tab='overview';}
-  function addProject(){const name=prompt('Name der Insel','Neue Kolonialinsel');if(!name)return;const p=newProject(name);db.projects.push(p);db.activeProjectId=p.id;commit();}
-  function deleteProject(){if(db.projects.length<2){alert('Mindestens eine Insel muss erhalten bleiben.');return}if(!confirm(`Insel „${project.name}“ löschen?`))return;db.projects=db.projects.filter(p=>p.id!==project.id);db.activeProjectId=db.projects[0].id;commit();}
-  function setProfile(){const profile=PROFILES[db.settings.profile];if(db.settings.profile!=='custom'){db.settings.worktimeFactor=profile.worktimeFactor;db.settings.logisticsFactor=profile.logisticsFactor;}commit();}
-  function updatePolicy(goodId:string,field:'externalSupply'|'reserve'|'exportEnabled',value:number|boolean){
-    scenario.policies[goodId]??={externalSupply:0,reserve:0,exportEnabled:true};
-    if(field==='exportEnabled') scenario.policies[goodId].exportEnabled=Boolean(value);
-    else scenario.policies[goodId][field]=Math.max(0,Number(value)||0);
+  onMount(() => {
+    db = load();
+    ready = true;
+  });
+
+  function commit() {
+    db = { ...db };
+    save(db);
+  }
+
+  function building(id: string) {
+    return BUILDINGS.find((item) => item.id === id)!;
+  }
+
+  function addBuilding() {
+    const first = allowedBuildings.find((item) => item.kind === 'production') ?? allowedBuildings[0];
+    const entry = newEntry(first.id, scenario.clusters[0].id, 'existing');
+    entry.modeId = first.modes[0].id;
+    scenario.entries.push(entry);
     commit();
   }
-  function addGoalToForecast(){let target=scenario;if(target.type!=='forecast'){const copy=cloneScenario(scenario,`${goalBuildingData.name}-Plan`);project.scenarios.push(copy);project.selectedId=copy.id;target=copy;}for(const row of goalRows){const b=building(row.buildingId);const existing=target.entries.find(e=>e.buildingId===row.buildingId&&e.status==='planned');if(existing)existing.count+=row.recommended;else{const e=newEntry(b.id,target.clusters[0].id,'planned');e.count=row.recommended;e.modeId=row.buildingId===goalBuilding?goalMode:b.modes[0].id;target.entries.push(e);}}commit();tab='buildings';}
-  function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`tropico-planer-${project.name.toLowerCase().replace(/[^a-z0-9]+/gi,'-')}.json`;a.click();URL.revokeObjectURL(a.href);}
-  async function importData(file:File){try{const parsed=JSON.parse(await file.text()) as Database;if(parsed.schema!==2||!Array.isArray(parsed.projects))throw new Error();db=parsed;commit();}catch{alert('Diese Datei ist kein gültiges Backup des Produktionsplaners.');}}
-  function resetData(){if(confirm('Alle lokalen Inseln und Einstellungen wirklich zurücksetzen?')){db=seed();commit();tab='overview';}}
+
+  function changeBuilding(entry: Entry) {
+    const selected = building(entry.buildingId);
+    entry.modeId = selected.modes[0].id;
+    entry.rateOverrides = { inputs: {}, outputs: {} };
+    commit();
+  }
+
+  function removeBuilding(id: string) {
+    scenario.entries = scenario.entries.filter((entry) => entry.id !== id);
+    commit();
+  }
 </script>
 
 {#if ready && project && scenario && result}
-<div class:compact={db.settings.compact} class="app-shell">
-  <aside class:open={showMobileNav} class="sidebar">
-    <div class="brand"><div class="brand-mark">T6</div><div><strong>Produktionsplaner</strong><small>Kolonialzeit</small></div></div>
-    <nav aria-label="Hauptnavigation">
-      <button class:active={tab==='overview'} onclick={()=>switchTab('overview')}><span>01</span> Übersicht</button>
-      <button class:active={tab==='buildings'} onclick={()=>switchTab('buildings')}><span>02</span> Gebäude <b>{scenario.entries.length}</b></button>
-      <button class:active={tab==='balance'} onclick={()=>switchTab('balance')}><span>03</span> Warenbilanz</button>
-      <button class:active={tab==='planning'} onclick={()=>switchTab('planning')}><span>04</span> Planung <b>{project.scenarios.length-1}</b></button>
-      <button class:active={tab==='settings'} onclick={()=>switchTab('settings')}><span>05</span> Einstellungen</button>
-    </nav>
-    <div class="side-bottom"><div class="save-state"><i></i> Lokal gespeichert<small>{savedAt} Uhr · nur dieses Gerät</small></div><button class="quiet full" onclick={exportData}>Backup exportieren</button></div>
-  </aside>
-
   <main>
-    <header class="topbar">
-      <button class="menu" onclick={()=>showMobileNav=!showMobileNav} aria-label="Navigation öffnen">☰</button>
-      <label class="island-select"><span>Insel</span><select bind:value={db.activeProjectId} onchange={()=>{project.selectedId=project.currentId;commit()}}>{#each db.projects as p}<option value={p.id}>{p.name}</option>{/each}</select></label>
-      <div class="era"><span>Ära</span><strong>Kolonialzeit</strong></div>
-      <div class="scenario-tabs" aria-label="Szenarien">{#each project.scenarios as s}<button class:active={s.id===scenario.id} onclick={()=>{project.selectedId=s.id;selectedEntryId='';commit()}}>{s.name}{s.type==='current'?' · Ist':''}</button>{/each}</div>
-      <button class="primary small" onclick={addForecast}>Neue Prognose</button>
+    <header class="app-header">
+      <div>
+        <span class="product">Tropico 6 Produktionsplaner</span>
+        <span class="era">Kolonialzeit</span>
+      </div>
+      <nav aria-label="Hauptnavigation">
+        <button class:active={tab === 'overview'} onclick={() => (tab = 'overview')}>Übersicht</button>
+        <button class:active={tab === 'buildings'} onclick={() => (tab = 'buildings')}>Gebäude</button>
+      </nav>
     </header>
 
-    <div class="content">
-      {#if tab==='overview'}
-        <section class="overview-head"><div><h1>Übersicht</h1><p>{project.name} · {scenario.name}</p></div>{#if scenario.type==='forecast'}<span class="forecast-label">Prognose</span>{/if}</section>
-        {#if comparison}<div class="forecast-banner"><strong>Vergleich zum Ist-Stand</strong><span>{comparison.totalBuildings>=0?'+':''}{fmt(comparison.totalBuildings,0)} Gebäude</span><span>{comparison.totalJobs>=0?'+':''}{fmt(comparison.totalJobs,0)} Arbeitsplätze</span><button onclick={applyForecast}>Als Ist übernehmen</button></div>{/if}
-        <div class="overview-grid">
-          <section class="summary-block"><header><h2>Überschuss</h2><button class="link" onclick={()=>switchTab('balance')}>Warenbilanz öffnen</button></header>{#if result.topExports.length}<table class="summary-table"><thead><tr><th>Ware</th><th>Verfügbar</th></tr></thead><tbody>{#each result.topExports as item}<tr><td>{GOODS[item.goodId]?.name}</td><td>{fmt(item.exportable)}</td></tr>{/each}</tbody></table>{:else}<p class="plain-empty">Kein exportierbarer Überschuss.</p>{/if}</section>
-
-          <section class="summary-block"><header><h2>Transport <Tip enabled={db.settings.tooltips} text="Schätzung aus bewegter Warenmenge und optionaler Entfernung. Keine Wegsimulation."/></h2></header><dl class="summary-values"><div><dt>Transportbüros vorhanden</dt><dd>{fmt(result.teamsterOffices,0)}</dd></div><div><dt>Empfohlener Bereich</dt><dd>{result.recommendedMin}–{result.recommendedMax}</dd></div><div><dt>Berechnete Transportlast</dt><dd>{fmt(result.transportLoad)}</dd></div></dl></section>
-
-          <section class="summary-block"><header><h2>Hinweise</h2><span class="count-label">{result.diagnostics.filter(d=>d.severity!=='success').length}</span></header><div class="notice-list">{#each result.diagnostics as item}<article class:error={item.severity==='error'} class:warning={item.severity==='warning'}><strong>{item.title}</strong><p>{item.detail}</p></article>{/each}</div></section>
-
-          <section class="summary-block"><header><h2>Benötigte Arbeiter <Tip enabled={db.settings.tooltips} text="Gebäudeanzahl × Arbeitsplätze, aufgeteilt nach erforderlichem Bildungsgrad."/></h2><strong class="total-workers">{fmt(result.totalJobs,0)} gesamt</strong></header><table class="summary-table"><thead><tr><th>Bildungsgrad</th><th>Benötigt</th><th>Besetzt</th><th>Offen</th></tr></thead><tbody><tr><td>Ungelernt</td><td>{fmt(result.educationJobs['uneducated'],0)}</td><td>{fmt(result.educationFilled['uneducated'],0)}</td><td>{fmt(result.educationJobs['uneducated']-result.educationFilled['uneducated'],0)}</td></tr><tr><td>Oberschule</td><td>{fmt(result.educationJobs['high-school'],0)}</td><td>{fmt(result.educationFilled['high-school'],0)}</td><td>{fmt(result.educationJobs['high-school']-result.educationFilled['high-school'],0)}</td></tr><tr><td>Hochschule</td><td>{fmt(result.educationJobs['college'],0)}</td><td>{fmt(result.educationFilled['college'],0)}</td><td>{fmt(result.educationJobs['college']-result.educationFilled['college'],0)}</td></tr></tbody></table></section>
+    <section class="content">
+      {#if tab === 'overview'}
+        <div class="page-header">
+          <div>
+            <h1>Übersicht</h1>
+            <p>Der aktuelle Stand deiner Insel auf einen Blick.</p>
+          </div>
         </div>
-      {:else if tab==='buildings'}
-        <section class="page-head"><div><p class="eyebrow">Ist-Stand und Ausbau</p><h1>Gebäude erfassen</h1><p>Füge gleiche Gebäude zusammen oder erfasse sie für unterschiedliche Werte einzeln.</p></div><button class="primary" onclick={addBuilding}>＋ Gebäude hinzufügen</button></section>
-        <section class="toolbar"><input class="search" placeholder="Gebäude suchen …" bind:value={search}/><select bind:value={category}>{#each categories as c}<option>{c}</option>{/each}</select><span>{visibleEntries.length} Einträge</span></section>
-        <div class:with-detail={selectedEntry} class="building-layout"><section class="building-grid">{#if visibleEntries.length}{#each visibleEntries as entry (entry.id)}{@const b=building(entry.buildingId)}{@const r=entryResult(entry.id)}<button class:selected={selectedEntryId===entry.id} class:disabled={entry.status==='disabled'} class="building-card" onclick={()=>selectedEntryId=entry.id}><div class="building-visual"><span>{b.icon}</span><i class:verified={b.dataStatus==='verified'} class:estimated={b.dataStatus==='estimated'}>{b.dataStatus==='verified'?'Verifiziert':b.dataStatus==='estimated'?'Geschätzt':b.dataStatus==='unknown'?'Eigene Werte nötig':'Modell'}</i></div><div class="building-body"><div class="building-title"><div><small>{b.category}</small><strong>{b.name}</strong></div><em>{entry.status==='planned'?'Geplant':entry.status==='disabled'?'Aus':'Gebaut'}</em></div><div class="card-numbers"><span><small>Anzahl</small><b>{entry.count}</b></span><span><small>Besetzung</small><b>{entry.staffing}%</b></span><span><small>Versorgt</small><b class:bad={r&&r.utilization<.999}>{r?.calculable?`${Math.round(r.utilization*100)} %`:'–'}</b></span></div></div></button>{/each}{:else}<div class="empty large">Keine passenden Gebäude. Füge dein erstes Gebäude hinzu.</div>{/if}</section>
-        {#if selectedEntry && selectedBuilding}<aside class="detail"><div class="detail-head"><div class="detail-icon">{selectedBuilding.icon}</div><div><small>{selectedBuilding.category}</small><h2>{selectedBuilding.name}</h2></div><button class="close" onclick={()=>{selectedEntryId=''}}>×</button></div><div class="form-grid"><label class="wide">Gebäude<select bind:value={selectedEntry.buildingId} onchange={()=>changeBuilding(selectedEntry)}>{#each allowedBuildings as b}<option value={b.id}>{b.name}</option>{/each}</select></label><label>Anzahl<input type="number" min="0" step="1" bind:value={selectedEntry.count} onchange={commit}/></label><label>Status<select bind:value={selectedEntry.status} onchange={commit}><option value="existing">Gebaut</option><option value="planned">Geplant</option><option value="disabled">Deaktiviert</option></select></label><label class="wide">Cluster<select bind:value={selectedEntry.clusterId} onchange={commit}>{#each scenario.clusters as c}<option value={c.id}>{c.name}</option>{/each}</select></label><label>Effizienz <Tip enabled={db.settings.tooltips} text="Spielwert in Prozent. Wirkt direkt auf Input und Output."/><input type="number" min="0" max="500" bind:value={selectedEntry.efficiency} onchange={commit}/></label><label>Besetzung <Tip enabled={db.settings.tooltips} text="Anteil tatsächlich besetzter Arbeitsplätze. 75 % bedeutet, dass nur drei Viertel der möglichen Arbeitsleistung eingeplant werden."/><input type="number" min="0" max="100" bind:value={selectedEntry.staffing} onchange={commit}/></label><label class="wide">Arbeitsmodus<select bind:value={selectedEntry.modeId} onchange={commit}>{#each selectedBuilding.modes as m}<option value={m.id}>{m.name}</option>{/each}</select></label><label class="wide">Entfernung, optional <Tip enabled={db.settings.tooltips} text="Relative Entfernungskategorie als Zahl. 10 erhöht die geschätzte Transportlast um 100 %. Leer nutzt den Clusterwert."/><input type="number" min="0" placeholder="Clusterwert verwenden" bind:value={selectedEntry.distance} onchange={commit}/></label></div>
-        <div class="formula"><strong>Erwartete Leistung</strong><span>Basis × {selectedEntry.efficiency}% Effizienz × {selectedEntry.staffing}% Besetzung × {Math.round(db.settings.worktimeFactor*100)}% Arbeitszeit × {Math.round(db.settings.logisticsFactor*100)}% Logistik</span></div>
-        {#if selectedBuilding.dataStatus!=='verified'}<details><summary>Eigene Produktionswerte</summary><p class="muted">{selectedBuilding.source}</p>{#each Object.entries(mode(selectedEntry).inputs) as [good,rate]}<label>{GOODS[good]?.name} Input je Arbeitstag<input type="number" step="0.01" placeholder={rate==null?'Wert fehlt':String(rate)} bind:value={selectedEntry.rateOverrides.inputs[good]} onchange={commit}/></label>{/each}{#each Object.entries(mode(selectedEntry).outputs) as [good,rate]}<label>{GOODS[good]?.name} Output je Arbeitstag<input type="number" step="0.01" placeholder={rate==null?'Wert fehlt':String(rate)} bind:value={selectedEntry.rateOverrides.outputs[good]} onchange={commit}/></label>{/each}</details>{/if}
-        <label class="wide">Notiz<textarea rows="2" bind:value={selectedEntry.note} onchange={commit} placeholder="Optional"></textarea></label><div class="detail-actions"><button class="quiet" onclick={()=>duplicateEntry(selectedEntry)}>Duplizieren</button><button class="danger" onclick={()=>removeEntry(selectedEntry.id)}>Löschen</button></div></aside>{/if}</div>
-      {:else if tab==='balance'}
-        <section class="page-head"><div><p class="eyebrow">Produktion und Verbrauch</p><h1>Warenbilanz</h1><p>Lege externe Versorgung und Mindestreserven fest. Der Rest kann exportiert werden.</p></div></section>
-        <section class="panel table-panel"><table><thead><tr><th>Ware</th><th>Produktion <Tip enabled={db.settings.tooltips} text="Erwartete Produktion nach Effizienz, Besetzung, Arbeitszeit, Logistik und Rohstoffversorgung."/></th><th>Extern</th><th>Verbrauch</th><th>Fehlmenge</th><th>Reserve</th><th>Exportierbar <Tip enabled={db.settings.tooltips} text="Verbleibender Bestand abzüglich Mindestreserve, sofern Export erlaubt ist."/></th><th>Export</th></tr></thead><tbody>{#each result.balances as item}<tr class:bad-row={item.unmet>.01}><td><span class="good-icon">{GOODS[item.goodId]?.icon}</span><strong>{GOODS[item.goodId]?.name}</strong></td><td>{fmt(item.produced)}</td><td><input aria-label="Externe Versorgung" type="number" min="0" value={scenario.policies[item.goodId]?.externalSupply??0} onchange={(event)=>updatePolicy(item.goodId,'externalSupply',Number(event.currentTarget.value))}/></td><td>{fmt(item.consumed)}</td><td class:bad={item.unmet>.01}>{fmt(item.unmet)}</td><td><input aria-label="Mindestreserve" type="number" min="0" value={scenario.policies[item.goodId]?.reserve??0} onchange={(event)=>updatePolicy(item.goodId,'reserve',Number(event.currentTarget.value))}/></td><td class:good={item.exportable>.01}>{fmt(item.exportable)}</td><td><input aria-label="Export erlaubt" type="checkbox" checked={scenario.policies[item.goodId]?.exportEnabled??true} onchange={(event)=>updatePolicy(item.goodId,'exportEnabled',event.currentTarget.checked)}/></td></tr>{/each}</tbody></table>{#if !result.balances.length}<div class="empty large">Sobald du Produktionsgebäude einträgst, erscheint hier die Warenbilanz.</div>{/if}</section>
-      {:else if tab==='planning'}
-        <section class="page-head"><div><p class="eyebrow">Rückwärts rechnen</p><h1>Produktionsziel planen</h1><p>Wähle einen zusätzlichen Ausbau. Der Planer ermittelt die dafür benötigten Rohstoffgebäude.</p></div></section>
-        <div class="planning-grid"><section class="panel goal-form"><h2>Was möchtest du betreiben?</h2><label>Endgebäude<select bind:value={goalBuilding} onchange={()=>{goalBuildingData=allowedBuildings.find(b=>b.id===goalBuilding)??allowedBuildings[0];goalMode=goalBuildingData.modes[0].id}}>{#each allowedBuildings.filter(b=>b.kind==='production'&&b.stage>0) as b}<option value={b.id}>{b.icon} {b.name}</option>{/each}</select></label><label>Anzahl<input type="number" min="1" step="1" bind:value={goalCount}/></label><label>Arbeitsmodus<select bind:value={goalMode}>{#each goalBuildingData.modes as m}<option value={m.id}>{m.name}</option>{/each}</select></label><div class="profile-note"><strong>{PROFILES[db.settings.profile].name}</strong><span>{PROFILES[db.settings.profile].description}</span><button class="link" onclick={()=>switchTab('settings')}>Profil ändern</button></div></section>
-        <section class="panel chain"><div class="panel-head"><div><p class="eyebrow">Bauempfehlung</p><h2>{goalBuildingData.icon} {goalCount} × {goalBuildingData.name}</h2></div></div>{#if goalRows.length}{#each goalRows as row,index}<div class="chain-row"><div class="chain-icon">{row.icon}</div><div><strong>{row.name}</strong><small>{row.reason}</small></div><span><small>rechnerisch</small>{fmt(row.exact,2)}</span><b>{row.recommended} bauen</b></div>{#if index<goalRows.length-1}<div class="chain-arrow">↓</div>{/if}{/each}<div class="calculation-note"><strong>Warum wird aufgerundet?</strong><span>Teilgebäude gibt es im Spiel nicht. Der Überschuss der Aufrundung schafft eine kleine Reserve.</span></div><button class="primary full" onclick={addGoalToForecast}>Als Ausbauprognose übernehmen</button>{:else}<div class="empty">Für dieses Gebäude fehlen noch belastbare Produktionswerte.</div>{/if}</section></div>
-        <section class="panel scenario-manager"><div class="panel-head"><div><p class="eyebrow">Varianten</p><h2>Ist-Stand und Prognosen</h2></div><button class="primary small" onclick={addForecast}>＋ Neue Prognose</button></div><div class="scenario-list">{#each project.scenarios as s}<button class:active={s.id===scenario.id} onclick={()=>{project.selectedId=s.id;commit()}}><span>{s.type==='current'?'●':'◇'}</span><div><strong>{s.name}</strong><small>{s.entries.length} Einträge · {s.type==='current'?'unveränderlicher Bezug':'Ausbauvariante'}</small></div></button>{/each}</div>{#if scenario.type==='forecast'}<div class="scenario-actions"><button class="primary" onclick={applyForecast}>Als neuen Ist-Stand übernehmen</button><button class="danger" onclick={deleteForecast}>Prognose löschen</button></div>{/if}</section>
+
+        <div class="overview-grid">
+          <section class="summary">
+            <h2>Überschuss</h2>
+            {#if result.topExports.length}
+              <table class="summary-table"><tbody>{#each result.topExports as item}<tr><td>{GOODS[item.goodId]?.name}</td><td>{fmt(item.exportable)}</td></tr>{/each}</tbody></table>
+            {:else}<p>Kein exportierbarer Überschuss.</p>{/if}
+          </section>
+          <section class="summary">
+            <h2>Transport</h2>
+            <dl><div><dt>Transportbüros</dt><dd>{fmt(result.teamsterOffices, 0)}</dd></div><div><dt>Empfohlen</dt><dd>{result.recommendedMin}–{result.recommendedMax}</dd></div><div><dt>Transportlast</dt><dd>{fmt(result.transportLoad)}</dd></div></dl>
+          </section>
+          <section class="summary">
+            <h2>Hinweise</h2>
+            <div class="notices">{#each result.diagnostics as item}<article><strong>{item.title}</strong><p>{item.detail}</p></article>{/each}</div>
+          </section>
+          <section class="summary">
+            <h2>Benötigte Arbeiter</h2>
+            <table class="summary-table"><thead><tr><th>Bildungsgrad</th><th>Benötigt</th><th>Offen</th></tr></thead><tbody><tr><td>Ungelernt</td><td>{fmt(result.educationJobs.uneducated, 0)}</td><td>{fmt(result.educationJobs.uneducated - result.educationFilled.uneducated, 0)}</td></tr><tr><td>Oberschule</td><td>{fmt(result.educationJobs['high-school'], 0)}</td><td>{fmt(result.educationJobs['high-school'] - result.educationFilled['high-school'], 0)}</td></tr><tr><td>Hochschule</td><td>{fmt(result.educationJobs.college, 0)}</td><td>{fmt(result.educationJobs.college - result.educationFilled.college, 0)}</td></tr></tbody></table>
+          </section>
+        </div>
       {:else}
-        <section class="page-head"><div><p class="eyebrow">Persönliche Konfiguration</p><h1>Einstellungen</h1><p>Die Einstellungen gelten lokal in diesem Browser.</p></div></section>
-        <div class="settings-grid"><section class="panel"><h2>Insel und Inhalte</h2><label>Inselname<input bind:value={project.name} onchange={commit}/></label><div class="setting-block"><strong>DLC-Inhalte der Kolonialzeit</strong><p>Nur aktivierte Inhalte erscheinen in der Gebäudeauswahl.</p>{#each DLCS as dlc}<label class="toggle-row"><input type="checkbox" checked={dlc.id==='base'||project.dlcs.includes(dlc.id)} disabled={dlc.id==='base'} onchange={(e)=>{const checked=(e.currentTarget as HTMLInputElement).checked;if(checked&&!project.dlcs.includes(dlc.id))project.dlcs.push(dlc.id);if(!checked)project.dlcs=project.dlcs.filter(id=>id!==dlc.id);commit()}}/><span><strong>{dlc.name}</strong><small>{dlc.description}</small></span></label>{/each}</div><div class="button-row"><button class="quiet" onclick={addProject}>＋ Neue Insel</button><button class="danger" onclick={deleteProject}>Insel löschen</button></div></section>
-        <section class="panel"><h2>Darstellung</h2><label class="toggle-row"><input type="checkbox" bind:checked={db.settings.tooltips} onchange={commit}/><span><strong>Erklärende Tooltips</strong><small>Zeigt Formeln und Bedeutungen direkt an Kennzahlen und Eingaben.</small></span></label><label class="toggle-row"><input type="checkbox" bind:checked={db.settings.compact} onchange={commit}/><span><strong>Kompakte Darstellung</strong><small>Reduziert Abstände für kleinere Bildschirme und große Inseln.</small></span></label></section>
-        <section class="panel"><h2>Erwartungsprofil <Tip enabled={db.settings.tooltips} text="Theoretische Raten gelten nur während tatsächlicher Arbeit. Das Profil schätzt Arbeitswege und Logistikverluste sichtbar, ohne Scheingenauigkeit."/></h2><label>Profil<select bind:value={db.settings.profile} onchange={setProfile}>{#each Object.entries(PROFILES) as [id,p]}<option value={id}>{p.name}</option>{/each}</select></label><p>{PROFILES[db.settings.profile].description}</p><div class="form-grid"><label>Arbeitszeitfaktor<input type="number" min="0" max="1" step="0.05" disabled={db.settings.profile!=='custom'} bind:value={db.settings.worktimeFactor} onchange={commit}/></label><label>Logistikfaktor<input type="number" min="0" max="1" step="0.05" disabled={db.settings.profile!=='custom'} bind:value={db.settings.logisticsFactor} onchange={commit}/></label></div><div class="formula"><strong>Erwartet = theoretisch × Arbeitszeit × Logistik</strong><span>Aktuell bleiben vor Effizienz und Besetzung rund {Math.round(db.settings.worktimeFactor*db.settings.logisticsFactor*100)} % der theoretischen Leistung.</span></div></section>
-        <section class="panel"><h2>Cluster und Transport</h2>{#each scenario.clusters as c}<div class="cluster-row"><input aria-label="Clustername" bind:value={c.name} onchange={commit}/><input aria-label="Entfernung" type="number" min="0" placeholder="Entfernung" bind:value={c.distance} onchange={commit}/><button class="danger icon-button" disabled={scenario.clusters.length<2} onclick={()=>deleteCluster(c.id)}>×</button></div>{/each}<button class="quiet" onclick={addCluster}>＋ Cluster hinzufügen</button><details><summary>Transportmodell kalibrieren</summary><div class="form-grid"><label>Kapazität niedrig<input type="number" min="1" bind:value={db.settings.transportCapacityLow} onchange={commit}/></label><label>Kapazität hoch<input type="number" min="1" bind:value={db.settings.transportCapacityHigh} onchange={commit}/></label></div></details></section>
-        <section class="panel"><h2>Daten und Sicherung</h2><p>Alle Inseln bleiben ausschließlich in diesem Browser. Ein Backup ermöglicht Gerätewechsel und Wiederherstellung.</p><div class="button-stack"><button class="primary" onclick={exportData}>Backup als JSON exportieren</button><button class="quiet" onclick={()=>importInput.click()}>Backup importieren</button><input class="hidden" bind:this={importInput} type="file" accept="application/json" onchange={(e)=>{const file=(e.currentTarget as HTMLInputElement).files?.[0];if(file)importData(file)}}/><button class="danger" onclick={resetData}>Alle lokalen Daten zurücksetzen</button></div></section></div>
+        <div class="page-header">
+          <div>
+            <h1>Gebäude</h1>
+            <p>Gebäude, Anzahl und tatsächliche Effizienz deiner Insel.</p>
+          </div>
+          <button class="add-button" onclick={addBuilding}>Gebäude hinzufügen</button>
+        </div>
+
+        <div class="building-list">
+          <table>
+            <thead><tr><th>Gebäude</th><th>Anzahl</th><th>Effizienz</th><th>Arbeitsmodus</th><th><span class="visually-hidden">Aktionen</span></th></tr></thead>
+            <tbody>
+              {#each scenario.entries as entry (entry.id)}
+                {@const selected = building(entry.buildingId)}
+                <tr>
+                  <td><select aria-label="Gebäude" bind:value={entry.buildingId} onchange={() => changeBuilding(entry)}>{#each allowedBuildings as option}<option value={option.id}>{option.name}</option>{/each}</select></td>
+                  <td><input aria-label={`Anzahl ${selected.name}`} type="number" min="0" step="1" value={entry.count} oninput={(event) => { entry.count = Number(event.currentTarget.value); commit(); }} /></td>
+                  <td><label class="percent-input"><span class="visually-hidden">Effizienz {selected.name}</span><input type="number" min="0" max="500" step="1" value={entry.efficiency} oninput={(event) => { entry.efficiency = Number(event.currentTarget.value); commit(); }} /><span>%</span></label></td>
+                  <td><select aria-label={`Arbeitsmodus ${selected.name}`} bind:value={entry.modeId} onchange={commit}>{#each selected.modes as mode}<option value={mode.id}>{mode.name}</option>{/each}</select></td>
+                  <td class="actions"><button class="delete-button" onclick={() => removeBuilding(entry.id)}>Löschen</button></td>
+                </tr>
+              {:else}<tr><td class="empty" colspan="5">Noch keine Gebäude eingetragen.</td></tr>{/each}
+            </tbody>
+          </table>
+        </div>
       {/if}
-    </div>
+    </section>
   </main>
-</div>
 {/if}
 
 <style>
-  :global(*){box-sizing:border-box} :global(html){background:#f4ead5} :global(body){margin:0;color:#2c312d;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif} :global(button),:global(input),:global(select),:global(textarea){font:inherit} :global(button){cursor:pointer}
-  .app-shell{min-height:100vh;background:linear-gradient(135deg,#f8f0df 0,#f2e5cd 55%,#ecddc1 100%)} .sidebar{position:fixed;inset:0 auto 0 0;z-index:20;width:245px;display:flex;flex-direction:column;background:#244d43;color:#f8f3e9;box-shadow:8px 0 30px #19362f18}.brand{display:flex;align-items:center;gap:12px;padding:25px 20px 22px;border-bottom:1px solid #ffffff18}.brand-mark{display:grid;place-items:center;width:43px;height:43px;border-radius:13px;background:#f3c45d;font-size:23px;box-shadow:inset 0 -3px #00000013}.brand strong{display:block;font-family:Georgia,serif;font-size:17px}.brand small{display:block;margin-top:3px;color:#c5d6d1;text-transform:uppercase;letter-spacing:.13em;font-size:10px}.sidebar nav{display:grid;gap:5px;padding:18px 12px}.sidebar nav button{display:flex;align-items:center;gap:12px;width:100%;padding:12px 13px;border:0;border-radius:10px;background:transparent;color:#d9e4e1;text-align:left}.sidebar nav button span{width:22px;text-align:center}.sidebar nav button b{margin-left:auto;padding:2px 7px;border-radius:10px;background:#ffffff16;font-size:11px}.sidebar nav button:hover,.sidebar nav button.active{background:#ffffff12;color:white}.sidebar nav button.active{box-shadow:inset 3px 0 #f0bd4e}.side-bottom{display:grid;gap:10px;margin-top:auto;padding:16px}.save-state{position:relative;padding-left:19px;color:#d8e5e1;font-size:12px}.save-state i{position:absolute;left:2px;top:5px;width:8px;height:8px;border-radius:50%;background:#6fc48a;box-shadow:0 0 0 3px #6fc48a22}.save-state small{display:block;margin-top:4px;color:#9db8b0}main{margin-left:245px;min-width:0}.topbar{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:22px;height:76px;padding:0 30px;background:#fffaf0e8;backdrop-filter:blur(12px);border-bottom:1px solid #d8cab0}.island-select,.era{display:grid;gap:2px}.island-select span,.era span{color:#857d70;text-transform:uppercase;letter-spacing:.1em;font-size:9px}.island-select select{min-width:175px;padding:3px 28px 3px 0;border:0;background:transparent;font-weight:700}.era strong{font-size:13px}.scenario-tabs{display:flex;gap:5px;margin-left:auto;overflow:auto}.scenario-tabs button{white-space:nowrap;padding:7px 10px;border:0;border-radius:16px;background:transparent;color:#746e63;font-size:12px}.scenario-tabs button.active{background:#e3d6ba;color:#244d43;font-weight:700}.menu{display:none}.content{max-width:1480px;margin:auto;padding:34px}.hero{position:relative;overflow:hidden;display:flex;justify-content:space-between;gap:30px;align-items:center;min-height:190px;padding:36px 42px;border-radius:20px;background:linear-gradient(100deg,#315f52,#244d43 65%,#193f36);color:white;box-shadow:0 15px 40px #254a4025}.hero:after{content:'🌴';position:absolute;right:210px;bottom:-36px;font-size:150px;opacity:.08;transform:rotate(-8deg)}h1,h2{font-family:Georgia,'Times New Roman',serif}.hero h1,.page-head h1{margin:3px 0 8px;font-size:clamp(30px,4vw,44px)}.hero p{margin:0;color:#d6e3df}.eyebrow{margin:0!important;color:#b98527!important;text-transform:uppercase;letter-spacing:.16em;font-size:10px;font-weight:800}.hero .eyebrow{color:#f2c55e!important}.hero-status{position:relative;z-index:1;display:grid;min-width:210px;padding:20px;border:1px solid #ffffff27;border-radius:15px;background:#ffffff10}.hero-status span{width:max-content;padding:4px 8px;border-radius:8px;background:#77bd83;color:#153b2d;font-size:11px;font-weight:800}.hero-status.error span{background:#f4bd58;color:#4c3211}.hero-status strong{margin-top:10px;font-size:27px}.hero-status small{color:#c9d9d4}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:18px 0}.metrics article{display:flex;align-items:center;gap:14px;padding:18px;border:1px solid #e1d5bd;border-radius:14px;background:#fffbf3;box-shadow:0 5px 15px #725a2c0b}.metric-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:12px}.metric-icon.green{background:#dcebe1}.metric-icon.gold{background:#f7e8bd}.metric-icon.blue{background:#dbe9e8}.metric-icon.red{background:#f3deda}.metrics article>div:last-child{display:grid}.metrics span,.metrics small{color:#7b756b;font-size:11px}.metrics strong{font-size:25px}.dashboard-grid{display:grid;grid-template-columns:1.45fr 1fr;gap:18px}.panel{padding:24px;border:1px solid #e0d3b9;border-radius:16px;background:#fffaf1;box-shadow:0 6px 22px #7055240d}.panel h2{margin:3px 0 18px}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}.recommendations article{display:grid;grid-template-columns:8px 1fr auto;align-items:center;gap:13px;padding:15px 3px;border-top:1px solid #eadfca}.recommendations article p{margin:4px 0 0;color:#766f64;font-size:13px}.severity{width:7px;height:42px;border-radius:8px;background:#75ad7e}.recommendations article.warning .severity{background:#dfa640}.recommendations article.error .severity{background:#c94c3f}.export-row{display:grid;grid-template-columns:35px 1fr auto;align-items:center;padding:12px 0;border-top:1px solid #eadfca}.good-icon{display:inline-grid;place-items:center;width:29px;height:29px;margin-right:7px;border-radius:8px;background:#efe4cd}.page-head{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:25px}.page-head h1{margin-bottom:5px}.page-head p:last-child{margin:0;color:#736e64}.primary,.quiet,.danger{padding:10px 15px;border-radius:9px;font-weight:700}.primary{border:1px solid #a83d2d;background:#c84d37;color:white;box-shadow:0 4px 10px #c84d3725}.primary:hover{background:#b44330}.quiet{border:1px solid #d7c9ae;background:#fffaf0;color:#315c51}.danger{border:1px solid #e1b8b0;background:#fff5f2;color:#a23d32}.small{padding:8px 11px;font-size:12px}.full{width:100%}.link{padding:3px;border:0;background:transparent;color:#2d6c5e;font-weight:700}.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px;padding:10px;border:1px solid #dfd1b8;border-radius:12px;background:#fffaf1}.toolbar span{margin-left:auto;padding-right:8px;color:#80796e;font-size:12px}.search{flex:1;min-width:150px}.toolbar input,.toolbar select,input,select,textarea{padding:10px 11px;border:1px solid #d9ccb4;border-radius:8px;background:#fffdf8;color:#333;outline:none}.toolbar input:focus,.toolbar select:focus,input:focus,select:focus,textarea:focus{border-color:#4e8375;box-shadow:0 0 0 3px #4e83751c}.building-layout{display:grid}.building-layout.with-detail{grid-template-columns:minmax(0,1fr) 365px;gap:18px}.building-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:15px;align-content:start}.building-card{overflow:hidden;padding:0;border:1px solid #dfd2ba;border-radius:15px;background:#fffaf1;text-align:left;box-shadow:0 5px 15px #614c260b;transition:.15s}.building-card:hover,.building-card.selected{transform:translateY(-2px);border-color:#4f7e71;box-shadow:0 10px 24px #33594f18}.building-card.disabled{opacity:.55}.building-visual{position:relative;display:grid;place-items:center;height:92px;background:linear-gradient(135deg,#dce9da,#eee3c8)}.building-visual>span{font-size:48px;filter:drop-shadow(0 5px 5px #0002)}.building-visual i{position:absolute;top:8px;right:8px;padding:4px 7px;border-radius:10px;background:#c9a849;color:white;font-size:9px;font-style:normal}.building-visual i.verified{background:#568566}.building-visual i.estimated{background:#c88a35}.building-body{padding:14px}.building-title{display:flex;justify-content:space-between;gap:8px}.building-title small{display:block;color:#8a8377;font-size:9px;text-transform:uppercase;letter-spacing:.08em}.building-title strong{display:block;margin-top:3px}.building-title em{height:max-content;padding:3px 6px;border-radius:7px;background:#e7ddc7;color:#756b59;font-size:9px;font-style:normal}.card-numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid #e8ddc7}.card-numbers span{display:grid}.card-numbers small{color:#898174;font-size:9px}.card-numbers b{font-size:14px}.detail{position:sticky;top:94px;max-height:calc(100vh - 115px);overflow:auto;padding:20px;border:1px solid #d8c8a9;border-radius:16px;background:#fffaf1;box-shadow:0 10px 30px #46351717}.detail-head{display:flex;align-items:center;gap:11px;margin-bottom:18px}.detail-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:12px;background:#e6ead8;font-size:27px}.detail-head small{color:#857e73}.detail h2{margin:1px 0;font-size:21px}.close{margin-left:auto;border:0;background:transparent;color:#766f64;font-size:27px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.wide{grid-column:1/-1}label{display:grid;gap:5px;color:#5b5851;font-size:12px;font-weight:700}textarea{resize:vertical}.formula{display:grid;gap:4px;margin:15px 0;padding:12px;border-left:3px solid #db9f3e;border-radius:4px 9px 9px 4px;background:#f5ecd8}.formula span{color:#756e62;font-size:11px;line-height:1.5}.detail details,.settings-grid details{margin:15px 0;padding:10px;border:1px solid #e0d2b9;border-radius:9px}.detail details label{margin-top:10px}.detail-actions,.button-row,.scenario-actions{display:flex;justify-content:space-between;gap:9px;margin-top:15px}.empty{padding:30px;color:#898174;text-align:center}.empty.large{grid-column:1/-1;padding:70px}.forecast-banner{display:flex;align-items:center;gap:20px;margin-top:16px;padding:12px 16px;border-radius:12px;background:#e1ecdf;color:#365c4c}.forecast-banner span{font-size:13px}.forecast-banner button{margin-left:auto;border:0;background:transparent;color:#2b6756;font-weight:700}.table-panel{overflow:auto;padding:0}table{width:100%;border-collapse:collapse}th,td{padding:14px 16px;border-bottom:1px solid #e8ddc8;text-align:right;white-space:nowrap}th{background:#f2e8d5;color:#6f695f;font-size:11px}th:first-child,td:first-child{text-align:left}td input[type=number]{width:85px;padding:7px}td input[type=checkbox],.toggle-row input{accent-color:#347263}.bad-row{background:#fff4ef}.good{color:#31704c!important;font-weight:800}.bad{color:#b84135!important}.planning-grid{display:grid;grid-template-columns:340px 1fr;gap:18px}.goal-form label{margin:14px 0}.profile-note{display:grid;gap:4px;margin-top:20px;padding:14px;border-radius:10px;background:#e4ece2}.profile-note span{color:#66766e;font-size:12px}.chain-row{display:grid;grid-template-columns:45px 1fr 100px 90px;gap:12px;align-items:center;padding:10px 0}.chain-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#e8e3cd;font-size:23px}.chain-row div:nth-child(2){display:grid}.chain-row small{color:#867e72}.chain-row>span{display:grid;text-align:right}.chain-row>b{text-align:right;color:#315f52}.chain-arrow{height:16px;margin-left:20px;color:#b19356}.calculation-note{display:grid;gap:3px;margin:16px 0;padding:13px;border-radius:9px;background:#f4ead5;font-size:12px}.calculation-note span{color:#766f64}.scenario-manager{margin-top:18px}.scenario-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.scenario-list button{display:flex;gap:10px;padding:14px;border:1px solid #dfd2ba;border-radius:10px;background:#fffdf8;text-align:left}.scenario-list button.active{border-color:#4b7a6e;background:#edf3eb}.scenario-list button div{display:grid}.scenario-list small{margin-top:3px;color:#81796d}.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}.settings-grid>.panel>label{margin-bottom:13px}.setting-block{margin-top:20px}.setting-block>p,.panel>p{color:#787165;font-size:13px}.toggle-row{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid #eadfca}.toggle-row input{width:18px;height:18px}.toggle-row span{display:grid;gap:3px}.toggle-row small{color:#827b70;font-weight:400}.cluster-row{display:grid;grid-template-columns:1fr 110px 36px;gap:7px;margin-bottom:8px}.icon-button{padding:5px}.button-stack{display:grid;gap:8px}.hidden{display:none}.compact .content{padding-top:20px}.compact .building-grid{gap:9px}.compact .building-visual{height:65px}.compact .building-visual>span{font-size:35px}.compact .building-body{padding:10px}.compact .panel{padding:17px}
-  /* Nüchterner Rechner-Rahmen und reduzierte Übersicht */
-  :global(html){background:#f3f4f6} :global(body){color:#1f2933;background:#f3f4f6}
-  .app-shell{background:#f3f4f6}.sidebar{background:#fff;color:#26323a;border-right:1px solid #d7dde1;box-shadow:none}.brand{padding:20px;border-bottom:1px solid #e1e5e8}.brand-mark{width:36px;height:36px;border-radius:4px;background:#263f4a;color:#fff;box-shadow:none;font-size:13px;font-weight:800}.brand strong{font-family:inherit;font-size:15px}.brand small{color:#68757d;letter-spacing:.08em}.sidebar nav{gap:2px;padding:12px 10px}.sidebar nav button{padding:10px;border-radius:4px;color:#4b5961}.sidebar nav button span{color:#849098;font-size:10px;font-weight:700}.sidebar nav button b{background:#edf0f2}.sidebar nav button:hover,.sidebar nav button.active{background:#edf1f3;color:#18252c}.sidebar nav button.active{box-shadow:inset 3px 0 #315b6b}.save-state{color:#526169}.save-state small{color:#7a878e}.topbar{height:64px;padding:0 24px;background:#fff;border-bottom:1px solid #d7dde1;backdrop-filter:none}.scenario-tabs button{border-radius:4px}.scenario-tabs button.active{background:#e7ecef;color:#243c46}.content{padding:28px}.primary,.quiet,.danger{border-radius:4px;box-shadow:none}.primary{border-color:#294b58;background:#315b6b}.primary:hover{background:#284c59}.quiet{border-color:#cdd4d8;background:#fff;color:#294b58}.panel,.toolbar,.building-card,.detail{border-color:#d8dee2;border-radius:6px;background:#fff;box-shadow:none}h1,h2,.page-head h1{font-family:inherit}.overview-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #cfd6da}.overview-head h1{margin:0;font-size:26px}.overview-head p{margin:5px 0 0;color:#66737b;font-size:13px}.forecast-label,.count-label{padding:3px 7px;border:1px solid #9ba8af;border-radius:3px;color:#4b5961;font-size:11px}.overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.summary-block{min-height:220px;border:1px solid #ccd4d9;background:#fff}.summary-block>header{display:flex;align-items:center;justify-content:space-between;min-height:50px;padding:12px 16px;border-bottom:1px solid #dce2e5;background:#f7f8f9}.summary-block h2{margin:0;font-size:15px}.summary-block .link{font-size:12px}.summary-table th,.summary-table td{padding:10px 16px;border-color:#e3e7e9}.summary-table th{background:#fff;color:#66737b;text-transform:uppercase;letter-spacing:.04em;font-size:10px}.summary-values{margin:0}.summary-values div{display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e3e7e9}.summary-values dt{color:#59666e}.summary-values dd{margin:0;font-weight:700}.notice-list article{padding:12px 16px;border-bottom:1px solid #e3e7e9;border-left:3px solid #678273}.notice-list article.warning{border-left-color:#b5812c}.notice-list article.error{border-left-color:#b4493f}.notice-list p{margin:4px 0 0;color:#67747b;font-size:12px}.plain-empty{margin:0;padding:18px;color:#68757d}.total-workers{font-size:12px}.forecast-banner{border:1px solid #cbd6d0;border-radius:4px;box-shadow:none}
-  @media(max-width:1050px){.overview-grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.dashboard-grid{grid-template-columns:1fr}.building-layout.with-detail{grid-template-columns:1fr}.detail{position:fixed;z-index:30;inset:85px 15px 15px auto;width:min(390px,calc(100% - 30px));max-height:none}.planning-grid{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}.topbar{gap:12px}.era{display:none}}
-  @media(max-width:760px){.sidebar{transform:translateX(-100%);transition:.2s}.sidebar.open{transform:translateX(0)}main{margin-left:0}.menu{display:block;padding:8px;border:0;background:transparent;font-size:22px}.topbar{height:64px;padding:0 12px}.island-select select{min-width:110px;max-width:145px}.scenario-tabs{display:none}.topbar>.primary{margin-left:auto}.content{padding:18px 13px}.hero{align-items:flex-start;flex-direction:column;padding:25px;min-height:0}.hero-status{width:100%;min-width:0}.metrics{grid-template-columns:1fr 1fr;gap:8px}.metrics article{padding:12px;gap:9px}.metric-icon{display:none}.metrics strong{font-size:20px}.page-head{align-items:flex-start;flex-direction:column}.page-head .primary{width:100%}.toolbar{flex-wrap:wrap}.toolbar .search{flex-basis:100%}.building-grid{grid-template-columns:1fr}.forecast-banner{align-items:flex-start;flex-wrap:wrap}.forecast-banner button{margin:0}.chain-row{grid-template-columns:40px 1fr auto}.chain-row>span{display:none}.chain-row>b{font-size:12px}.table-panel{margin:0 -13px;border-radius:0}.scenario-list{grid-template-columns:1fr}.settings-grid{gap:10px}.recommendations article{grid-template-columns:7px 1fr}.recommendations article button{grid-column:2}.hero:after{display:none}}
+  :global(*) { box-sizing: border-box; }
+  :global(body) { margin: 0; background: #f4f5f6; color: #1f2529; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  :global(button), :global(input), :global(select) { font: inherit; }
+
+  main { min-height: 100vh; }
+  .app-header { height: 58px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; border-bottom: 1px solid #cfd5d9; background: #fff; }
+  .app-header > div { display: flex; align-items: center; gap: 12px; }
+  .product { font-size: 14px; font-weight: 700; }
+  .era { padding-left: 12px; border-left: 1px solid #cfd5d9; color: #687178; font-size: 13px; }
+  nav { align-self: stretch; display: flex; gap: 6px; }
+  nav button { padding: 0 16px; border-bottom: 3px solid transparent; background: transparent; color: #5c676d; font-size: 14px; }
+  nav button.active { border-bottom-color: #24353f; color: #1f2529; font-weight: 700; }
+  .content { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 42px 0; }
+  .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+  h1 { margin: 0; font-size: 30px; line-height: 1.2; }
+  p { margin: 7px 0 0; color: #657078; font-size: 14px; }
+  button { border: 0; cursor: pointer; }
+  .add-button { min-height: 40px; padding: 0 16px; border: 1px solid #24353f; background: #24353f; color: #fff; font-weight: 650; }
+  .add-button:hover { background: #17252d; }
+  .building-list { overflow-x: auto; border: 1px solid #cbd2d6; background: #fff; }
+  .overview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .summary { min-height: 220px; padding: 20px; border: 1px solid #cbd2d6; background: #fff; }
+  .summary h2 { margin: 0 0 16px; font-size: 17px; }
+  .summary p { line-height: 1.45; }
+  .summary dl { margin: 0; }
+  .summary dl div { display: flex; justify-content: space-between; gap: 20px; padding: 10px 0; border-bottom: 1px solid #e1e5e7; }
+  .summary dt { color: #5f6a70; }
+  .summary dd { margin: 0; font-weight: 700; }
+  .summary-table { min-width: 0; }
+  .summary-table th, .summary-table td { padding: 9px 0; background: transparent; }
+  .summary-table th:last-child, .summary-table td:last-child { text-align: right; }
+  .notices article { padding: 10px 0; border-bottom: 1px solid #e1e5e7; }
+  .notices article:first-child { padding-top: 0; }
+  .notices article:last-child { border-bottom: 0; }
+  .notices strong { font-size: 14px; }
+  table { width: 100%; min-width: 760px; border-collapse: collapse; }
+  th { padding: 11px 14px; border-bottom: 1px solid #cbd2d6; background: #eef1f2; color: #536068; font-size: 12px; font-weight: 700; letter-spacing: .02em; text-align: left; text-transform: uppercase; }
+  td { padding: 10px 14px; border-bottom: 1px solid #e1e5e7; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #fafbfb; }
+  input, select { width: 100%; height: 36px; padding: 0 10px; border: 1px solid #b9c2c7; border-radius: 0; background: #fff; color: #1f2529; }
+  input:focus, select:focus { border-color: #506d7c; outline: 2px solid rgba(80, 109, 124, .16); outline-offset: 0; }
+  td:nth-child(1) { width: 42%; }
+  td:nth-child(2) { width: 110px; }
+  td:nth-child(3) { width: 150px; }
+  td:nth-child(4) { width: 230px; }
+  .percent-input { display: flex; align-items: center; border: 1px solid #b9c2c7; background: #fff; }
+  .percent-input:focus-within { border-color: #506d7c; outline: 2px solid rgba(80, 109, 124, .16); }
+  .percent-input input { border: 0; outline: 0; }
+  .percent-input span:last-child { padding-right: 10px; color: #677178; }
+  .actions { width: 90px; text-align: right; }
+  .delete-button { padding: 6px 0; background: transparent; color: #8a3131; font-size: 13px; }
+  .delete-button:hover { text-decoration: underline; }
+  .empty { padding: 32px; color: #69737a; text-align: center; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+  @media (max-width: 680px) {
+    .app-header { height: auto; align-items: flex-start; flex-direction: column; padding: 14px 18px 0; }
+    nav { height: 44px; margin-top: 10px; }
+    nav button { padding: 0 14px; }
+    .content { width: calc(100% - 28px); padding: 28px 0; }
+    .page-header { align-items: stretch; flex-direction: column; }
+    .add-button { width: 100%; }
+    .overview-grid { grid-template-columns: 1fr; }
+  }
 </style>
