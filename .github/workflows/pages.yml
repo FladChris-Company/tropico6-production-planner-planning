@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'release/**'
+      - 'release/v2/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -30,29 +30,15 @@ jobs:
         with:
           node-version: 22
 
-      - name: Reconstruct tested release
+      - name: Reconstruct release
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p .release
-          cat \
-            release/parts/part-00 \
-            release/parts/part-01 \
-            release/parts/part-02 \
-            release/parts/part-03 \
-            release/parts/part-04a \
-            release/parts/part-04b \
-            release/parts/part-04c \
-            release/parts/part-04d \
-            release/parts/part-05 \
-            release/parts/part-06 \
-            release/parts/part-07 \
-            | tr -d '\n\r' \
-            | base64 --decode \
-            > .release/release.tar.gz
-          echo 'e73b8a19760edbbdf972a7cffd706261b3b2aaeb30d0da1936554fdd50e77bc5  .release/release.tar.gz' | sha256sum --check --strict
-          tar -xzf .release/release.tar.gz -C .release
-          test -f .release/app/index.html
+          cat release/v2/parts/part-* | tr -d '\n\r' | base64 --decode > .release/source.tar.gz
+          echo '6c913ca075b91fd55bb5dc0b283f539fa32526f7fd87700de8af70d310368569  .release/source.tar.gz' | sha256sum --check --strict
+          tar -xzf .release/source.tar.gz -C .release
+          test -f .release/index.html
           test -f .release/package.json
 
       - name: Run calculation tests
@@ -62,10 +48,10 @@ jobs:
       - name: Validate JavaScript syntax
         working-directory: .release
         run: |
-          node --check app/core.js
-          node --check app/game-data.js
-          node --check app/app.js
-          node --check app/sw.js
+          node --check core.js
+          node --check game-data.js
+          node --check app.js
+          node --check sw.js
 
       - name: Report successful tests
         env:
@@ -75,7 +61,7 @@ jobs:
           gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
             -f state=success \
             -f context='tropico/tests' \
-            -f description='Calculation and syntax tests passed' \
+            -f description='Player UX and calculation tests passed' \
             -f target_url="$TARGET_URL"
 
       - name: Configure Pages
@@ -84,7 +70,7 @@ jobs:
       - name: Upload static application
         uses: actions/upload-pages-artifact@v4
         with:
-          path: .release/app
+          path: .release
 
       - name: Report successful Pages preparation
         env:
@@ -128,7 +114,7 @@ jobs:
           gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
             -f state=success \
             -f context='tropico/pages-deploy' \
-            -f description='Colonial beta is live' \
+            -f description='Colonial beta v0.2.0 is live' \
             -f target_url="$TARGET_URL"
 
       - name: Report deployment failure
