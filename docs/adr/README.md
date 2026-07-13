@@ -18,3 +18,4 @@ ADRs halten wesentliche Entscheidungen mit Kontext, Alternativen und Folgen fest
 - [ADR-0005: Trennung von Spiel- und Nutzerdaten](0005-trennung-spiel-und-nutzerdaten.md)
 - [ADR-0006: Kein Backend in der ersten Version](0006-kein-backend-in-v1.md)
 - [ADR-0007: Planungsrepository ohne Code](0007-planungsrepository-ohne-code.md)
+- [ADR-0008: Zielorientierte modulare Produktarchitektur](0008-zielorientierte-modulare-produktarchitektur.md)
