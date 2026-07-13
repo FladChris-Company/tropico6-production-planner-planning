@@ -38,6 +38,8 @@ export function calculateScenario({scenario,buildings,goods,settings}:{scenario:
   const pool:Rates={}, produced:Rates={}, consumed:Rates={}, unmet:Rates={}, external:Rates={};
   const prepared:Prepared[]=[];
   let totalBuildings=0,plannedBuildings=0,totalJobs=0,filledJobs=0,unknownEntries=0,teamsterOffices=0,transportLoad=0;
+  const educationJobs:Record<string,number>={'uneducated':0,'high-school':0,'college':0};
+  const educationFilled:Record<string,number>={'uneducated':0,'high-school':0,'college':0};
 
   for(const [goodId,policy] of Object.entries(scenario.policies ?? {})) {
     const amount=Math.max(0,Number(policy.externalSupply)||0); pool[goodId]=(pool[goodId]??0)+amount; external[goodId]=amount;
@@ -50,6 +52,8 @@ export function calculateScenario({scenario,buildings,goods,settings}:{scenario:
     const calculable=[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(v=>v!=null&&Number.isFinite(Number(v)));
     totalBuildings+=count; if(entry.status==='planned') plannedBuildings+=count;
     totalJobs+=count*building.workers; filledJobs+=count*building.workers*staffing;
+    educationJobs[building.education]=(educationJobs[building.education]??0)+count*building.workers;
+    educationFilled[building.education]=(educationFilled[building.education]??0)+count*building.workers*staffing;
     if(building.kind==='teamster') teamsterOffices+=count;
     if(!calculable&&building.kind==='production') unknownEntries+=count;
     prepared.push({entry,building,mode,count,theoreticalFactor:count*building.workers*efficiency*staffing,expectedFactor:count*building.workers*efficiency*staffing*settings.worktimeFactor*settings.logisticsFactor,rates:normalized,calculable});
@@ -87,7 +91,7 @@ export function calculateScenario({scenario,buildings,goods,settings}:{scenario:
   if(unknownEntries) diagnostics.push({severity:'warning',title:`${fmt(unknownEntries,0)} Gebäude ohne belastbare Rate`,detail:'Eigene Messwerte können direkt beim Gebäude eingetragen werden.',action:'Werte ergänzen'});
   if(transportLoad&&teamsterOffices<recommendedMin) diagnostics.push({severity:'warning',title:'Transportkapazität wahrscheinlich knapp',detail:`${teamsterOffices} vorhanden; grob ${recommendedMin}–${recommendedMax} empfohlen.`,action:'Transportbüro einplanen'});
   if(!diagnostics.length) diagnostics.push({severity:'success',title:'Produktion rechnerisch stabil',detail:'Unter den gewählten Annahmen ist kein direkter Engpass erkennbar.'});
-  return {totalBuildings,plannedBuildings,totalJobs,filledJobs,openJobs,teamsterOffices,transportLoad,recommendedMin,recommendedMax,unknownEntries,balances,chainSummaries,diagnostics,entryResults,suppliedChains:chainSummaries.filter(x=>x.utilization>=.999).length,totalChains:chainSummaries.length,topExports:balances.filter(x=>x.exportable>.01).sort((a,b)=>b.exportable-a.exportable).slice(0,5)};
+  return {totalBuildings,plannedBuildings,totalJobs,filledJobs,openJobs,educationJobs,educationFilled,teamsterOffices,transportLoad,recommendedMin,recommendedMax,unknownEntries,balances,chainSummaries,diagnostics,entryResults,suppliedChains:chainSummaries.filter(x=>x.utilization>=.999).length,totalChains:chainSummaries.length,topExports:balances.filter(x=>x.exportable>.01).sort((a,b)=>b.exportable-a.exportable).slice(0,5)};
 }
 
 export function goalRequirements(buildingId:string,count:number,modeId:string,buildings:Building[],settings:Settings,goods:Record<string,{name:string}>={}) {

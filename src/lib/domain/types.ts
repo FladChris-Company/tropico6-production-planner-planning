@@ -16,7 +16,7 @@ export interface Building {
   category: string;
   dlc: string;
   workers: number;
-  education: 'uneducated';
+  education: 'uneducated' | 'high-school' | 'college';
   kind: 'production' | 'teamster';
   stage: number;
   dataStatus: DataStatus;

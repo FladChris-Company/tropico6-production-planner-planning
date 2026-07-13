@@ -28,6 +28,12 @@ describe('Kolonialzeit-Berechnung',()=>{
     expect(half.balances[0].produced).toBeCloseTo(full.balances[0].produced/2);
   });
 
+  it('teilt den Arbeiterbedarf nach Bildungsgrad auf',()=>{
+    const result=calculate([entry('sugar','plantation-sugar',2),entry('rum','rum-distillery',1,'dunder')]);
+    expect(result.educationJobs).toEqual({'uneducated':20,'high-school':0,'college':0});
+    expect(result.educationFilled.uneducated).toBe(20);
+  });
+
   it('plant für eine Destille zwei Zuckerplantagen',()=>{
     const rows=goalRequirements('rum-distillery',1,'dunder',BUILDINGS,DEFAULT_SETTINGS,GOODS);
     expect(rows.map(x=>[x.buildingId,x.recommended])).toEqual([['plantation-sugar',2],['rum-distillery',1]]);
