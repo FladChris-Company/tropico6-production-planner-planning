@@ -12,6 +12,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  statuses: write
 
 concurrency:
   group: pages
@@ -51,6 +52,17 @@ jobs:
           node --check app/app.js
           node --check app/sw.js
 
+      - name: Report successful tests
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=success \
+            -f context='tropico/tests' \
+            -f description='Calculation and syntax tests passed' \
+            -f target_url="$TARGET_URL"
+
       - name: Configure Pages
         uses: actions/configure-pages@v6
 
@@ -58,6 +70,29 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: .release/app
+
+      - name: Report successful Pages preparation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=success \
+            -f context='tropico/pages-build' \
+            -f description='Pages artifact prepared' \
+            -f target_url="$TARGET_URL"
+
+      - name: Report build failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=failure \
+            -f context='tropico/pages-build' \
+            -f description='Tests or Pages preparation failed' \
+            -f target_url="$TARGET_URL"
 
   deploy:
     needs: build
@@ -69,3 +104,26 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Report successful deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=success \
+            -f context='tropico/pages-deploy' \
+            -f description='Colonial beta is live' \
+            -f target_url="$TARGET_URL"
+
+      - name: Report deployment failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=failure \
+            -f context='tropico/pages-deploy' \
+            -f description='GitHub Pages deployment failed' \
+            -f target_url="$TARGET_URL"
