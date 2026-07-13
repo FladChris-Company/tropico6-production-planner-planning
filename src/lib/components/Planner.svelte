@@ -154,7 +154,7 @@
           </section>
           <section class="summary">
             <h2>Hinweise</h2>
-            <div class="notices">{#each result.diagnostics as item}<article><strong>{item.title}</strong><p>{item.detail}</p></article>{/each}</div>
+            <div class="notices">{#each result.diagnostics as item}<article><strong>{item.title}</strong><p>{item.detail}</p>{#if item.items?.length}<ul>{#each item.items as detail}<li>{detail}</li>{/each}</ul>{/if}</article>{/each}</div>
           </section>
           <section class="summary">
             <h2>Benötigte Arbeiter</h2>
@@ -235,6 +235,8 @@
   .notices article:first-child { padding-top: 0; }
   .notices article:last-child { border-bottom: 0; }
   .notices strong { font-size: 14px; }
+  .notices ul { margin: 8px 0 0; padding-left: 18px; color: #4f5b62; font-size: 13px; line-height: 1.45; }
+  .notices li + li { margin-top: 4px; }
   table { width: 100%; min-width: 1000px; border-collapse: collapse; }
   th { padding: 11px 14px; border-bottom: 1px solid #cbd2d6; background: #eef1f2; color: #536068; font-size: 12px; font-weight: 700; letter-spacing: .02em; text-align: left; text-transform: uppercase; }
   td { padding: 10px 14px; border-bottom: 1px solid #e1e5e7; }

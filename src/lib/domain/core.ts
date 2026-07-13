@@ -114,10 +114,25 @@ export function calculateScenario({scenario,buildings,goods,settings,era='coloni
   const referenceOfficeCapacity=6*LOAD_PER_TRIP_BY_ERA[era]*Math.max(0,settings.transportTripsPerWorker);
   const requiredTeamsterOffices=transportDemand>0&&referenceOfficeCapacity>0?Math.ceil(transportDemand/referenceOfficeCapacity):0;
   const teamsterOfficeDifference=requiredTeamsterOffices-teamsterOffices;
-  const diagnostics:{severity:'success'|'warning'|'error';title:string;detail:string;action?:string}[]=[];
+  const diagnostics:{severity:'success'|'warning'|'error';title:string;detail:string;items?:string[];action?:string}[]=[];
   for(const chain of chainSummaries.filter(x=>x.utilization<.999)) diagnostics.push({severity:'error',title:`${chain.buildingName} nur zu ${Math.round(chain.utilization*100)} % versorgt`,detail:chain.inputs.filter(x=>x.missing>.01).map(x=>`${goods[x.goodId]?.name??x.goodId}: ${fmt(x.missing)}`).join(' · '),action:'Rohstoffproduktion erhöhen'});
   const openJobs=Math.max(0,totalJobs-filledJobs); if(openJobs>.01) diagnostics.push({severity:'warning',title:`${fmt(openJobs)} offene Arbeitsplätze`,detail:'Die Besetzung reduziert die erwartete Produktion.',action:'Besetzung prüfen'});
-  if(unknownEntries) diagnostics.push({severity:'warning',title:`${fmt(unknownEntries,0)} Gebäude ohne belastbare Rate`,detail:'Eigene Messwerte können direkt beim Gebäude eingetragen werden.',action:'Werte ergänzen'});
+  if(unknownEntries) {
+    const groupedUnknown=new Map<string,{name:string;modeName:string;count:number}>();
+    for(const item of prepared.filter(x=>!x.calculable&&x.building.kind==='production')) {
+      const key=`${item.building.id}:${item.mode.id}`;
+      const existing=groupedUnknown.get(key);
+      if(existing) existing.count+=item.count;
+      else groupedUnknown.set(key,{name:item.building.name,modeName:item.mode.name,count:item.count});
+    }
+    diagnostics.push({
+      severity:'warning',
+      title:`${fmt(unknownEntries,0)} Gebäude ohne belastbare Rate`,
+      detail:'Für diese Gebäude fehlen noch Produktions- oder Verbrauchsmengen:',
+      items:[...groupedUnknown.values()].map(item=>`${fmt(item.count,0)} × ${item.name} · Arbeitsmodus: ${item.modeName}`),
+      action:'Produktionswerte später ergänzen'
+    });
+  }
   if(teamsterOfficeDifference>0) diagnostics.push({severity:'warning',title:'Transportkapazität theoretisch zu niedrig',detail:`Im Standardmodell werden ${teamsterOfficeDifference} weitere Transportbüros benötigt.`,action:'Transportbüro einplanen'});
   if(!diagnostics.length) diagnostics.push({severity:'success',title:'Produktion rechnerisch stabil',detail:'Unter den gewählten Annahmen ist kein direkter Engpass erkennbar.'});
   return {totalBuildings,plannedBuildings,totalJobs,filledJobs,openJobs,educationJobs,educationFilled,teamsterOffices,transportDemand,transportCapacity,transportDifference,transportUtilization,requiredTeamsterOffices,teamsterOfficeDifference,unknownEntries,balances,chainSummaries,diagnostics,entryResults,suppliedChains:chainSummaries.filter(x=>x.utilization>=.999).length,totalChains:chainSummaries.length,topExports:balances.filter(x=>x.exportable>.01).sort((a,b)=>b.exportable-a.exportable).slice(0,5)};

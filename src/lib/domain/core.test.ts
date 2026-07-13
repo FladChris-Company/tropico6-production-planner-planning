@@ -59,7 +59,8 @@ describe('Kolonialzeit-Berechnung',()=>{
   it('lässt unbekannte Raten sichtbar unberechenbar',()=>{
     const result=calculate([entry('fish','fishermen-wharf',1,'fish')]);
     expect(result.unknownEntries).toBe(1);
-    expect(result.diagnostics.some(x=>x.title.includes('ohne belastbare Rate'))).toBe(true);
+    const diagnostic=result.diagnostics.find(x=>x.title.includes('ohne belastbare Rate'))!;
+    expect(diagnostic.items).toEqual(['1 × Fischereihafen · Arbeitsmodus: Fisch']);
   });
 
   it('berechnet die kolonialzeitliche Kapazität eines Transportbüros',()=>{
