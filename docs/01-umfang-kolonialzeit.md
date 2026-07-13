@@ -2,7 +2,7 @@
 
 ## Verbindlicher Startumfang
 
-Die erste verifizierte Datenbasis behandelt Inhalte, die in der Kolonialzeit nutzbar oder für kolonialzeitliche Produktion relevant sind. Die Anwendung selbst unterstützt bereits die Auswahl aller vier Zeitalter. Gebäudedefinitionen erhalten ein Freischaltzeitalter; frühere Gebäude bleiben in späteren Zeitaltern verfügbar.
+Die erste verifizierte Datenbasis behandelt Inhalte, die in der Kolonialzeit nutzbar oder für kolonialzeitliche Produktion relevant sind. Die Anwendung selbst unterstützt bereits die Auswahl aller vier Zeitalter. Gebäudedefinitionen werden genau einem Zeitalter zugeordnet und in der Gebäudeauswahl entsprechend gefiltert.
 
 Enthalten werden:
 

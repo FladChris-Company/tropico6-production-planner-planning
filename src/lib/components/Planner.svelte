@@ -33,6 +33,7 @@
 
   function addBuilding() {
     const first = allowedBuildings.find((item) => item.kind === 'production') ?? allowedBuildings[0];
+    if (!first) return;
     const entry = newEntry(first.id, scenario.clusters[0].id, 'existing');
     entry.modeId = first.modes[0].id;
     scenario.entries.push(entry);
@@ -122,7 +123,7 @@
             <h1>Gebäude</h1>
             <p>Gebäude, Anzahl und tatsächliche Effizienz deiner Insel.</p>
           </div>
-          <button class="add-button" onclick={addBuilding}>Gebäude hinzufügen</button>
+          <button class="add-button" disabled={!allowedBuildings.length} onclick={addBuilding}>Gebäude hinzufügen</button>
         </div>
 
         <div class="building-list">
@@ -140,7 +141,7 @@
                   <td class="performance-cell"><span>{rowPerformance.label}</span><Tip text={rowPerformance.tooltip} /></td>
                   <td class="actions"><button class="delete-button" onclick={() => removeBuilding(entry.id)}>Löschen</button></td>
                 </tr>
-              {:else}<tr><td class="empty" colspan="6">Noch keine Gebäude für dieses Zeitalter eingetragen.</td></tr>{/each}
+              {:else}<tr><td class="empty" colspan="6">{allowedBuildings.length ? 'Noch keine Gebäude für dieses Zeitalter eingetragen.' : 'Für dieses Zeitalter sind noch keine Gebäudedaten hinterlegt.'}</td></tr>{/each}
             </tbody>
           </table>
         </div>
@@ -170,6 +171,7 @@
   button { border: 0; cursor: pointer; }
   .add-button { min-height: 40px; padding: 0 16px; border: 1px solid #24353f; background: #24353f; color: #fff; font-weight: 650; }
   .add-button:hover { background: #17252d; }
+  .add-button:disabled { border-color: #aeb7bc; background: #aeb7bc; cursor: not-allowed; }
   .building-list { overflow-x: auto; border: 1px solid #cbd2d6; background: #fff; }
   .overview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
   .summary { min-height: 220px; padding: 20px; border: 1px solid #cbd2d6; background: #fff; }
