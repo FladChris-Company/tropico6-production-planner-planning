@@ -61,6 +61,18 @@
   function performance(entry: Entry) {
     const selected = building(entry.buildingId);
     const value = calculateEntryPerformance({entry, building:selected, era:project.era, settings:db.settings});
+    if (selected.kind === 'infrastructure') {
+      const description = selected.id === 'dock'
+        ? 'Der Hafen wird als Arbeitsplatz berücksichtigt. Eine eigene Umschlagkapazität ist noch nicht Teil des Modells.'
+        : selected.id === 'construction-office'
+          ? 'Das Baubüro wird als Arbeitsplatz berücksichtigt. Baugeschwindigkeit und Bauleistung werden noch nicht berechnet.'
+          : 'Der Palast wird als Arbeitsplatz berücksichtigt und besitzt keine Warenproduktion.';
+      return {
+        label: 'Nicht berechnet',
+        blocks: [{title:'Funktion im Modell',formula:[description]}],
+        notes: [`Arbeitsplätze: ${fmt(entry.count * selected.workers,0)} Ungelernte bei ${fmt(entry.count,0)} ${entry.count === 1 ? 'Gebäude' : 'Gebäuden'}.`]
+      };
+    }
     if (selected.kind === 'teamster') {
       return {
         label: `${fmt(value.transportCapacity)} Transportkapazität`,

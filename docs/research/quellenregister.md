@@ -33,6 +33,7 @@ Dieses Register sammelt potenzielle Quellen. Aufnahme bedeutet noch keine fachli
   - Verfügbarkeit in der Kolonialzeit und vier bestätigte Inputvarianten
 - Tropico Wiki, „Buildings (Tropico 6)“: https://tropico.fandom.com/wiki/Buildings_(Tropico_6)
   - vollständiger Ära- und Arbeitsplatzabgleich für produktions- und transportrelevante Gebäude
+  - Hafen, Baubüro und Palast: Kolonialzeit, sechs beziehungsweise sechs beziehungsweise vier ungelernte Arbeitsplätze
   - zuletzt geprüft am 13. Juli 2026
 - Tropico Wiki, „Goods (Tropico 6)“: https://tropico.fandom.com/wiki/Goods_(Tropico_6)
   - Rohstoffe, verarbeitete Waren und qualitative Zuordnung zu produzierenden und verbrauchenden Gebäuden

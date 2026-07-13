@@ -40,6 +40,9 @@ const pending = (id:string,name:string,workers:number,education:Building['educat
   id,name,icon:'•',category:stage===0?'Rohstoffgewinnung':'Industrie',dlc,workers,education,kind:'production',stage,availableFrom,dataStatus:'unknown',source:'Tropico Wiki: Gebäude, Zeitalter und Arbeitsplätze bestätigt; Produktionsraten noch offen',modes
 });
 const pendingMode = (id:string,name:string,inputs:string[],outputs:string[]):Building['modes'][number] => ({id,name,inputs:Object.fromEntries(inputs.map(good=>[good,null])),outputs:Object.fromEntries(outputs.map(good=>[good,null]))});
+const infrastructure = (id:string,name:string,workers:number,category='Infrastruktur'):Building => ({
+  id,name,icon:'•',category,dlc:'base',workers,education:'uneducated',kind:'infrastructure',stage:99,availableFrom:'colonial',dataStatus:'verified',source:'Tropico Wiki: Zeitalter, Arbeitsplätze und Bildungsgrad bestätigt',modes:[{id:'standard',name:'Standard',inputs:{},outputs:{}}]
+});
 
 export const BUILDINGS: Building[] = [
   raw('plantation-banana','Bananenplantage','🍌','banana',2.5,8,'Plantagen'), raw('plantation-cocoa','Kakaoplantage','🫘','cocoa',1,8,'Plantagen'),
@@ -66,6 +69,9 @@ export const BUILDINGS: Building[] = [
   {id:'paper-mill',name:'Papiermühle',icon:'📄',category:'DLC-Industrie',dlc:'return-to-nature',workers:5,education:'uneducated',kind:'production',stage:1,dataStatus:'estimated',source:estimated,modes:[{id:'logs',name:'Holzstämme',inputs:{logs:4},outputs:{paper:10}},{id:'coconut',name:'Kokosnüsse',inputs:{coconut:3.66},outputs:{paper:10}},{id:'cotton',name:'Baumwolle',inputs:{cotton:4.5},outputs:{paper:10}},{id:'wool',name:'Wolle',inputs:{wool:2.5},outputs:{paper:10}}]},
   {id:'printing-house',name:'Druckerei',icon:'📚',category:'DLC-Industrie',dlc:'return-to-nature',workers:5,education:'uneducated',kind:'production',stage:2,dataStatus:'estimated',source:estimated,modes:[{id:'paper',name:'Papierausgabe',inputs:{paper:10.8},outputs:{books:4}},{id:'leather',name:'Ledereinband',inputs:{paper:6,leather:2},outputs:{books:4}}]},
   {id:'teamster-office',name:'Transportbüro',icon:'🐎',category:'Logistik',dlc:'base',workers:6,education:'uneducated',kind:'teamster',stage:99,dataStatus:'model',source:'Kapazitätsmodell mit 500 Einheiten je Fahrt und angenommener Fahrtenzahl',modes:[{id:'standard',name:'Sichere Ladung',inputs:{},outputs:{}},{id:'loose-load',name:'Lockere Ladegrenzen',inputs:{},outputs:{}}]},
+  infrastructure('dock','Hafen',6),
+  infrastructure('construction-office','Baubüro',6),
+  infrastructure('palace','Palast',4,'Regierung'),
 
   pending('oil-well','Ölquelle',4,'high-school','world-wars',0,[pendingMode('standard','Standard',[],['oil'])]),
   pending('mine-nickel','Nickelmine',5,'uneducated','world-wars',0,[pendingMode('standard','Standard',[],['nickel'])]),
