@@ -35,7 +35,22 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .release
-          cat release/parts/part-* | tr -d '\n\r' | base64 --decode > .release/release.tar.gz
+          cat \
+            release/parts/part-00 \
+            release/parts/part-01 \
+            release/parts/part-02 \
+            release/parts/part-03 \
+            release/parts/part-04a \
+            release/parts/part-04b \
+            release/parts/part-04c \
+            release/parts/part-04d \
+            release/parts/part-05 \
+            release/parts/part-06 \
+            release/parts/part-07 \
+            | tr -d '\n\r' \
+            | base64 --decode \
+            > .release/release.tar.gz
+          echo 'e73b8a19760edbbdf972a7cffd706261b3b2aaeb30d0da1936554fdd50e77bc5  .release/release.tar.gz' | sha256sum --check --strict
           tar -xzf .release/release.tar.gz -C .release
           test -f .release/app/index.html
           test -f .release/package.json
