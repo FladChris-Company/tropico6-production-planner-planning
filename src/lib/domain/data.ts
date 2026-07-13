@@ -46,10 +46,10 @@ export const BUILDINGS: Building[] = [
   {id:'charcoal-burner',name:'Köhlerei',icon:'🔥',category:'DLC-Industrie',dlc:'return-to-nature',workers:4,education:'uneducated',kind:'production',stage:1,dataStatus:'estimated',source:estimated,modes:[{id:'normal',name:'Normalbetrieb',inputs:{logs:3.2},outputs:{coal:7}}]},
   {id:'paper-mill',name:'Papiermühle',icon:'📄',category:'DLC-Industrie',dlc:'return-to-nature',workers:5,education:'uneducated',kind:'production',stage:1,dataStatus:'estimated',source:estimated,modes:[{id:'logs',name:'Holzstämme',inputs:{logs:4},outputs:{paper:10}},{id:'coconut',name:'Kokosnüsse',inputs:{coconut:3.66},outputs:{paper:10}},{id:'cotton',name:'Baumwolle',inputs:{cotton:4.5},outputs:{paper:10}},{id:'wool',name:'Wolle',inputs:{wool:2.5},outputs:{paper:10}}]},
   {id:'printing-house',name:'Druckerei',icon:'📚',category:'DLC-Industrie',dlc:'return-to-nature',workers:5,education:'uneducated',kind:'production',stage:2,dataStatus:'estimated',source:estimated,modes:[{id:'paper',name:'Papierausgabe',inputs:{paper:10.8},outputs:{books:4}},{id:'leather',name:'Ledereinband',inputs:{paper:6,leather:2},outputs:{books:4}}]},
-  {id:'teamster-office',name:'Transportbüro',icon:'🐎',category:'Logistik',dlc:'base',workers:6,education:'uneducated',kind:'teamster',stage:99,dataStatus:'model',source:'Qualitatives Transportmodell; keine exakte Wegsimulation',modes:[{id:'standard',name:'Standard',inputs:{},outputs:{}}]}
+  {id:'teamster-office',name:'Transportbüro',icon:'🐎',category:'Logistik',dlc:'base',workers:6,education:'uneducated',kind:'teamster',stage:99,dataStatus:'model',source:'Kapazitätsmodell mit 500 Einheiten je Fahrt und angenommener Fahrtenzahl',modes:[{id:'standard',name:'Sichere Ladung',inputs:{},outputs:{}},{id:'loose-load',name:'Lockere Ladegrenzen',inputs:{},outputs:{}}]}
 ];
 
-export const DEFAULT_SETTINGS: Settings = {tooltips:true,compact:false,profile:'realistic',worktimeFactor:.8,logisticsFactor:.9,transportCapacityLow:120,transportCapacityHigh:180};
+export const DEFAULT_SETTINGS: Settings = {tooltips:true,compact:false,profile:'realistic',worktimeFactor:.8,logisticsFactor:.9,transportTripsPerWorker:2};
 
 export const PROFILES = {
   optimistic:{name:'Optimistisch',worktimeFactor:.95,logisticsFactor:.98,description:'Kurze Wege und zuverlässige Abholung'},

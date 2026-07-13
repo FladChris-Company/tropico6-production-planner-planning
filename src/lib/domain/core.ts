@@ -6,6 +6,9 @@ type Prepared = { entry: Scenario['entries'][number]; building: Building; mode: 
 export const clamp = (value: unknown, min: number, max: number) => Math.min(max, Math.max(min, Number(value) || 0));
 export const fmt = (value:number, digits=1) => Number(value || 0).toLocaleString('de-DE',{maximumFractionDigits:digits});
 
+const COLONIAL_LOAD_PER_TRIP = 500;
+const TEAMSTER_MODE_FACTORS: Record<string, number> = { standard: 1, 'loose-load': 1.35 };
+
 export function distanceFactor(entry: Prepared['entry'], scenario: Scenario) {
   const cluster = scenario.clusters.find((item) => item.id === entry.clusterId);
   const raw = entry.distance === '' ? cluster?.distance : entry.distance;
@@ -37,7 +40,7 @@ export function calculateScenario({scenario,buildings,goods,settings}:{scenario:
   const buildingMap=new Map(buildings.map(item=>[item.id,item]));
   const pool:Rates={}, produced:Rates={}, consumed:Rates={}, unmet:Rates={}, external:Rates={};
   const prepared:Prepared[]=[];
-  let totalBuildings=0,plannedBuildings=0,totalJobs=0,filledJobs=0,unknownEntries=0,teamsterOffices=0,transportLoad=0;
+  let totalBuildings=0,plannedBuildings=0,totalJobs=0,filledJobs=0,unknownEntries=0,teamsterOffices=0,transportCapacity=0;
   const educationJobs:Record<string,number>={'uneducated':0,'high-school':0,'college':0};
   const educationFilled:Record<string,number>={'uneducated':0,'high-school':0,'college':0};
 
@@ -54,7 +57,13 @@ export function calculateScenario({scenario,buildings,goods,settings}:{scenario:
     totalJobs+=count*building.workers; filledJobs+=count*building.workers*staffing;
     educationJobs[building.education]=(educationJobs[building.education]??0)+count*building.workers;
     educationFilled[building.education]=(educationFilled[building.education]??0)+count*building.workers*staffing;
-    if(building.kind==='teamster') teamsterOffices+=count;
+    if(building.kind==='teamster') {
+      teamsterOffices+=count;
+      const occupiedWorkers=count*building.workers*staffing;
+      const loadPerTrip=COLONIAL_LOAD_PER_TRIP*efficiency;
+      const modeFactor=TEAMSTER_MODE_FACTORS[mode.id]??1;
+      transportCapacity+=occupiedWorkers*loadPerTrip*modeFactor*Math.max(0,settings.transportTripsPerWorker);
+    }
     if(!calculable&&building.kind==='production') unknownEntries+=count;
     prepared.push({entry,building,mode,count,theoreticalFactor:count*building.workers*efficiency*staffing,expectedFactor:count*building.workers*efficiency*staffing*settings.worktimeFactor*settings.logisticsFactor,rates:normalized,calculable});
   }
@@ -67,9 +76,9 @@ export function calculateScenario({scenario,buildings,goods,settings}:{scenario:
     const ratio:Rates={}; for(const [good,amount] of Object.entries(demand)) ratio[good]=amount<=0?1:Math.min(1,(pool[good]??0)/amount);
     for(const item of group) {
       let utilization=1; for(const good of Object.keys(item.rates.inputs)) utilization=Math.min(utilization,ratio[good]??1);
-      const inputs:Rates={},outputs:Rates={},missing:Rates={},theoreticalOutputs:Rates={},distance=distanceFactor(item.entry,scenario);
-      for(const [good,rate] of Object.entries(item.rates.inputs)) {const full=rate*item.expectedFactor,actual=full*utilization;pool[good]=Math.max(0,(pool[good]??0)-actual);consumed[good]=(consumed[good]??0)+actual;unmet[good]=(unmet[good]??0)+full-actual;inputs[good]=actual;missing[good]=full-actual;transportLoad+=actual*distance;}
-      for(const [good,rate] of Object.entries(item.rates.outputs)) {const actual=rate*item.expectedFactor*utilization;pool[good]=(pool[good]??0)+actual;produced[good]=(produced[good]??0)+actual;outputs[good]=actual;theoreticalOutputs[good]=rate*item.theoreticalFactor;transportLoad+=actual*distance;}
+      const inputs:Rates={},outputs:Rates={},missing:Rates={},theoreticalOutputs:Rates={};
+      for(const [good,rate] of Object.entries(item.rates.inputs)) {const full=rate*item.expectedFactor,actual=full*utilization;pool[good]=Math.max(0,(pool[good]??0)-actual);consumed[good]=(consumed[good]??0)+actual;unmet[good]=(unmet[good]??0)+full-actual;inputs[good]=actual;missing[good]=full-actual;}
+      for(const [good,rate] of Object.entries(item.rates.outputs)) {const actual=rate*item.expectedFactor*utilization;pool[good]=(pool[good]??0)+actual;produced[good]=(produced[good]??0)+actual;outputs[good]=actual;theoreticalOutputs[good]=rate*item.theoreticalFactor;}
       entryResults.push({entryId:item.entry.id,buildingId:item.building.id,utilization,inputs,outputs,missing,calculable:true,theoreticalOutputs});
     }
   }
@@ -84,14 +93,19 @@ export function calculateScenario({scenario,buildings,goods,settings}:{scenario:
     const extraExact=inputs.length?Math.min(...inputs.map(i=>i.perBuildingDemand?i.leftover/i.perBuildingDemand:0)):0;
     return {entryId:item.entry.id,buildingId:item.building.id,buildingName:item.building.name,modeName:item.mode.name,count:item.count,utilization:result.utilization,inputs,outputs:Object.entries(result.outputs).map(([goodId,amount])=>({goodId,amount})),additionalWholeBuildings:Math.max(0,Math.floor(extraExact+1e-9))};
   });
-  const recommendedMin=transportLoad?Math.ceil(transportLoad/Math.max(1,settings.transportCapacityHigh)):0,recommendedMax=transportLoad?Math.ceil(transportLoad/Math.max(1,settings.transportCapacityLow)):0;
+  const transportDemand=Object.values(produced).reduce((sum,value)=>sum+value,0)+Object.values(external).reduce((sum,value)=>sum+value,0);
+  const transportDifference=transportCapacity-transportDemand;
+  const transportUtilization=transportCapacity>0?transportDemand/transportCapacity*100:null;
+  const referenceOfficeCapacity=6*COLONIAL_LOAD_PER_TRIP*Math.max(0,settings.transportTripsPerWorker);
+  const requiredTeamsterOffices=transportDemand>0&&referenceOfficeCapacity>0?Math.ceil(transportDemand/referenceOfficeCapacity):0;
+  const teamsterOfficeDifference=requiredTeamsterOffices-teamsterOffices;
   const diagnostics:{severity:'success'|'warning'|'error';title:string;detail:string;action?:string}[]=[];
   for(const chain of chainSummaries.filter(x=>x.utilization<.999)) diagnostics.push({severity:'error',title:`${chain.buildingName} nur zu ${Math.round(chain.utilization*100)} % versorgt`,detail:chain.inputs.filter(x=>x.missing>.01).map(x=>`${goods[x.goodId]?.name??x.goodId}: ${fmt(x.missing)}`).join(' · '),action:'Rohstoffproduktion erhöhen'});
   const openJobs=Math.max(0,totalJobs-filledJobs); if(openJobs>.01) diagnostics.push({severity:'warning',title:`${fmt(openJobs)} offene Arbeitsplätze`,detail:'Die Besetzung reduziert die erwartete Produktion.',action:'Besetzung prüfen'});
   if(unknownEntries) diagnostics.push({severity:'warning',title:`${fmt(unknownEntries,0)} Gebäude ohne belastbare Rate`,detail:'Eigene Messwerte können direkt beim Gebäude eingetragen werden.',action:'Werte ergänzen'});
-  if(transportLoad&&teamsterOffices<recommendedMin) diagnostics.push({severity:'warning',title:'Transportkapazität wahrscheinlich knapp',detail:`${teamsterOffices} vorhanden; grob ${recommendedMin}–${recommendedMax} empfohlen.`,action:'Transportbüro einplanen'});
+  if(teamsterOfficeDifference>0) diagnostics.push({severity:'warning',title:'Transportkapazität theoretisch zu niedrig',detail:`Im Standardmodell werden ${teamsterOfficeDifference} weitere Transportbüros benötigt.`,action:'Transportbüro einplanen'});
   if(!diagnostics.length) diagnostics.push({severity:'success',title:'Produktion rechnerisch stabil',detail:'Unter den gewählten Annahmen ist kein direkter Engpass erkennbar.'});
-  return {totalBuildings,plannedBuildings,totalJobs,filledJobs,openJobs,educationJobs,educationFilled,teamsterOffices,transportLoad,recommendedMin,recommendedMax,unknownEntries,balances,chainSummaries,diagnostics,entryResults,suppliedChains:chainSummaries.filter(x=>x.utilization>=.999).length,totalChains:chainSummaries.length,topExports:balances.filter(x=>x.exportable>.01).sort((a,b)=>b.exportable-a.exportable).slice(0,5)};
+  return {totalBuildings,plannedBuildings,totalJobs,filledJobs,openJobs,educationJobs,educationFilled,teamsterOffices,transportDemand,transportCapacity,transportDifference,transportUtilization,requiredTeamsterOffices,teamsterOfficeDifference,unknownEntries,balances,chainSummaries,diagnostics,entryResults,suppliedChains:chainSummaries.filter(x=>x.utilization>=.999).length,totalChains:chainSummaries.length,topExports:balances.filter(x=>x.exportable>.01).sort((a,b)=>b.exportable-a.exportable).slice(0,5)};
 }
 
 export function goalRequirements(buildingId:string,count:number,modeId:string,buildings:Building[],settings:Settings,goods:Record<string,{name:string}>={}) {
@@ -113,4 +127,4 @@ export function goalRequirements(buildingId:string,count:number,modeId:string,bu
   return rows.reverse();
 }
 
-export function compareResults(current:ReturnType<typeof calculateScenario>,forecast:ReturnType<typeof calculateScenario>) {return {totalBuildings:forecast.totalBuildings-current.totalBuildings,totalJobs:forecast.totalJobs-current.totalJobs,openJobs:forecast.openJobs-current.openJobs,transportLoad:forecast.transportLoad-current.transportLoad,suppliedChains:forecast.suppliedChains-current.suppliedChains};}
+export function compareResults(current:ReturnType<typeof calculateScenario>,forecast:ReturnType<typeof calculateScenario>) {return {totalBuildings:forecast.totalBuildings-current.totalBuildings,totalJobs:forecast.totalJobs-current.totalJobs,openJobs:forecast.openJobs-current.openJobs,transportDemand:forecast.transportDemand-current.transportDemand,suppliedChains:forecast.suppliedChains-current.suppliedChains};}

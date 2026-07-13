@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import Tip from './Tip.svelte';
   import { BUILDINGS, GOODS } from '$lib/domain/data';
   import { calculateScenario, fmt } from '$lib/domain/core';
   import { load, newEntry, save, seed } from '$lib/domain/storage';
@@ -79,8 +80,9 @@
             {:else}<p>Kein exportierbarer Überschuss.</p>{/if}
           </section>
           <section class="summary">
-            <h2>Transport</h2>
-            <dl><div><dt>Transportbüros</dt><dd>{fmt(result.teamsterOffices, 0)}</dd></div><div><dt>Empfohlen</dt><dd>{result.recommendedMin}–{result.recommendedMax}</dd></div><div><dt>Transportlast</dt><dd>{fmt(result.transportLoad)}</dd></div></dl>
+            <h2>Transport <Tip text="Näherungsmodell: Zu transportieren sind alle erzeugten und importierten Waren; Fabrikeingänge werden nicht doppelt gezählt. Die Kapazität ergibt sich aus besetzten Transportarbeiterstellen × 500 Einheiten Ladung × Effizienz × Arbeitsmodus × angenommenen zwei Fahrten. Reale Werte können durch Entfernungen, Verkehr, Rückwege, Wohnort, Bedürfnisse und abwesende Arbeiter deutlich abweichen." /></h2>
+            <p class="model-unit">Einheiten je Standardarbeitsschicht</p>
+            <dl><div><dt>Theoretisch zu transportieren</dt><dd>{fmt(result.transportDemand)}</dd></div><div><dt>Theoretisch transportierbar</dt><dd>{fmt(result.transportCapacity)}</dd></div><div><dt>Differenz</dt><dd class:deficit={result.transportDifference < 0}>{result.transportDifference > 0 ? '+' : ''}{fmt(result.transportDifference)}</dd></div><div><dt>Empfehlung</dt><dd>{result.teamsterOfficeDifference > 0 ? `${fmt(result.teamsterOfficeDifference, 0)} mehr bauen` : result.teamsterOfficeDifference < 0 ? `${fmt(Math.abs(result.teamsterOfficeDifference), 0)} weniger möglich` : 'Anzahl passt'}</dd></div></dl>
           </section>
           <section class="summary">
             <h2>Hinweise</h2>
@@ -88,7 +90,7 @@
           </section>
           <section class="summary">
             <h2>Benötigte Arbeiter</h2>
-            <table class="summary-table"><thead><tr><th>Bildungsgrad</th><th>Benötigt</th><th>Offen</th></tr></thead><tbody><tr><td>Ungelernt</td><td>{fmt(result.educationJobs.uneducated, 0)}</td><td>{fmt(result.educationJobs.uneducated - result.educationFilled.uneducated, 0)}</td></tr><tr><td>Oberschule</td><td>{fmt(result.educationJobs['high-school'], 0)}</td><td>{fmt(result.educationJobs['high-school'] - result.educationFilled['high-school'], 0)}</td></tr><tr><td>Hochschule</td><td>{fmt(result.educationJobs.college, 0)}</td><td>{fmt(result.educationJobs.college - result.educationFilled.college, 0)}</td></tr></tbody></table>
+            <table class="summary-table"><thead><tr><th>Bildungsgrad</th><th>Benötigt</th></tr></thead><tbody><tr><td>Ungelernt</td><td>{fmt(result.educationJobs.uneducated, 0)}</td></tr><tr><td>Oberschule</td><td>{fmt(result.educationJobs['high-school'], 0)}</td></tr><tr><td>Hochschule</td><td>{fmt(result.educationJobs.college, 0)}</td></tr></tbody></table>
           </section>
         </div>
       {:else}
@@ -147,10 +149,12 @@
   .summary { min-height: 220px; padding: 20px; border: 1px solid #cbd2d6; background: #fff; }
   .summary h2 { margin: 0 0 16px; font-size: 17px; }
   .summary p { line-height: 1.45; }
+  .summary .model-unit { margin: -8px 0 8px; font-size: 12px; }
   .summary dl { margin: 0; }
   .summary dl div { display: flex; justify-content: space-between; gap: 20px; padding: 10px 0; border-bottom: 1px solid #e1e5e7; }
   .summary dt { color: #5f6a70; }
   .summary dd { margin: 0; font-weight: 700; }
+  .summary dd.deficit { color: #9b2f2f; }
   .summary-table { min-width: 0; }
   .summary-table th, .summary-table td { padding: 9px 0; background: transparent; }
   .summary-table th:last-child, .summary-table td:last-child { text-align: right; }

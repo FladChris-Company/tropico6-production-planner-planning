@@ -62,8 +62,7 @@ export interface Settings {
   profile: 'optimistic' | 'realistic' | 'difficult' | 'custom';
   worktimeFactor: number;
   logisticsFactor: number;
-  transportCapacityLow: number;
-  transportCapacityHigh: number;
+  transportTripsPerWorker: number;
 }
 
 export interface Database {

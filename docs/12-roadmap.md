@@ -67,6 +67,8 @@ Priorisierte Hauptketten:
 ## Phase 5 – Arbeitskräfte und Logistik
 
 - Arbeitskräfte nach Bildungsstufe
+- Warenmenge gegen theoretische Transportkapazität rechnen
+- geeignete, vom Spieler lieferbare Messwerte zur inselbezogenen Transportkalibrierung untersuchen
 - Reserve nach geplantem Ausbau
 - Arbeitskräfteempfehlungen
 - Logistikprofile

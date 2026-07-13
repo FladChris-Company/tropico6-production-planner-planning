@@ -55,3 +55,5 @@ Spieldaten werden nicht ungeprüft als Wahrheit behandelt. Jeder Wert muss nachv
 ## Kalibrierung
 
 Der spätere Beobachtungsmodus soll reale Spielmessungen sammeln können. Eine zentrale Community-Datenübertragung ist für die erste Version nicht vorgesehen.
+
+Für das Transportmodell wird gezielt geprüft, welche Werte ein Spieler ohne aufwendige Messung liefern kann. Dazu gehören insbesondere beobachtete Liefermenge und Zeitraum, Strecke beziehungsweise Fahrtdauer, Besetzung, Effizienz, Arbeitsmodus, Lagerzustände und erkennbare Leerlaufzeiten. Ziel ist eine inselbezogene Kalibrierung der angenommenen Fahrten je Arbeiter.

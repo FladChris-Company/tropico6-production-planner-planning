@@ -51,4 +51,23 @@ describe('Kolonialzeit-Berechnung',()=>{
     expect(result.unknownEntries).toBe(1);
     expect(result.diagnostics.some(x=>x.title.includes('ohne belastbare Rate'))).toBe(true);
   });
+
+  it('berechnet die kolonialzeitliche Kapazität eines Transportbüros',()=>{
+    const result=calculate([entry('teamster','teamster-office',1)]);
+    expect(result.transportCapacity).toBe(6000);
+    expect(result.transportDemand).toBe(0);
+  });
+
+  it('berücksichtigt lockere Ladegrenzen konservativ mit Faktor 1,35',()=>{
+    const result=calculate([entry('teamster','teamster-office',1,'loose-load')]);
+    expect(result.transportCapacity).toBeCloseTo(8100);
+  });
+
+  it('zählt für den Transportbedarf nur Ausgaben und keine Fabrikeingänge doppelt',()=>{
+    const result=calculate([entry('sugar','plantation-sugar',2),entry('rum','rum-distillery',1,'dunder')]);
+    const produced=result.balances.reduce((sum,item)=>sum+item.produced,0);
+    expect(result.transportDemand).toBeCloseTo(produced);
+    expect(result.requiredTeamsterOffices).toBe(1);
+    expect(result.teamsterOfficeDifference).toBe(1);
+  });
 });
