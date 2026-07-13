@@ -7,7 +7,8 @@ export const ERAS: { id: Era; name: string; loadPerTrip: number }[] = [
   {id:'modern',name:'Moderne',loadPerTrip:1200}
 ];
 
-export const buildingAvailableInEra = (building: Building, era: Era) => (building.availableFrom??'colonial')===era;
+const ERA_ORDER: Era[] = ERAS.map(era=>era.id);
+export const buildingAvailableInEra = (building: Building, era: Era) => ERA_ORDER.indexOf(building.availableFrom??'colonial')<=ERA_ORDER.indexOf(era);
 
 export const GOODS: Record<string, { name: string; icon: string }> = {
   banana:{name:'Bananen',icon:'🍌'}, cocoa:{name:'Kakao',icon:'🫘'}, coffee:{name:'Kaffee',icon:'☕'}, corn:{name:'Mais',icon:'🌽'}, cotton:{name:'Baumwolle',icon:'☁️'},

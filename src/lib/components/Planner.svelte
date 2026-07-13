@@ -13,9 +13,9 @@
   $: project = db.projects.find((item) => item.id === db.activeProjectId) ?? db.projects[0];
   $: scenario = project?.scenarios.find((item) => item.id === project.selectedId) ?? project?.scenarios[0];
   $: currentEra = ERAS.find((item) => item.id === project?.era) ?? ERAS[0];
-  $: allowedBuildings = BUILDINGS.filter((item) => (item.dlc === 'base' || project?.dlcs.includes(item.dlc)) && buildingAvailableInEra(item, project?.era ?? 'colonial'));
-  $: visibleEntries = scenario?.entries.filter((entry) => allowedBuildings.some((item) => item.id === entry.buildingId)) ?? [];
-  $: result = scenario ? calculateScenario({ scenario, buildings: allowedBuildings, goods: GOODS, settings: db.settings, era: project?.era }) : null;
+  $: projectBuildings = BUILDINGS.filter((item) => item.dlc === 'base' || project?.dlcs.includes(item.dlc));
+  $: selectableBuildings = projectBuildings.filter((item) => buildingAvailableInEra(item, project?.era ?? 'colonial'));
+  $: result = scenario ? calculateScenario({ scenario, buildings: projectBuildings, goods: GOODS, settings: db.settings, era: project?.era }) : null;
 
   onMount(() => {
     db = load();
@@ -32,7 +32,7 @@
   }
 
   function addBuilding() {
-    const first = allowedBuildings.find((item) => item.kind === 'production') ?? allowedBuildings[0];
+    const first = selectableBuildings.find((item) => item.kind === 'production') ?? selectableBuildings[0];
     if (!first) return;
     const entry = newEntry(first.id, scenario.clusters[0].id, 'existing');
     entry.modeId = first.modes[0].id;
@@ -50,6 +50,11 @@
   function removeBuilding(id: string) {
     scenario.entries = scenario.entries.filter((entry) => entry.id !== id);
     commit();
+  }
+
+  function buildingOptions(entry: Entry) {
+    const selected = building(entry.buildingId);
+    return selectableBuildings.some((item) => item.id === selected.id) ? selectableBuildings : [selected, ...selectableBuildings];
   }
 
   function performance(entry: Entry) {
@@ -123,25 +128,25 @@
             <h1>Gebäude</h1>
             <p>Gebäude, Anzahl und tatsächliche Effizienz deiner Insel.</p>
           </div>
-          <button class="add-button" disabled={!allowedBuildings.length} onclick={addBuilding}>Gebäude hinzufügen</button>
+          <button class="add-button" disabled={!selectableBuildings.length} onclick={addBuilding}>Gebäude hinzufügen</button>
         </div>
 
         <div class="building-list">
           <table>
             <thead><tr><th>Gebäude</th><th>Anzahl</th><th>Effizienz</th><th>Arbeitsmodus</th><th>Leistung</th><th><span class="visually-hidden">Aktionen</span></th></tr></thead>
             <tbody>
-              {#each visibleEntries as entry (entry.id)}
+              {#each scenario.entries as entry (entry.id)}
                 {@const selected = building(entry.buildingId)}
                 {@const rowPerformance = performance(entry)}
                 <tr>
-                  <td><select aria-label="Gebäude" bind:value={entry.buildingId} onchange={() => changeBuilding(entry)}>{#each allowedBuildings as option}<option value={option.id}>{option.name}</option>{/each}</select></td>
+                  <td><select aria-label="Gebäude" bind:value={entry.buildingId} onchange={() => changeBuilding(entry)}>{#each buildingOptions(entry) as option}<option value={option.id}>{option.name}</option>{/each}</select></td>
                   <td><input aria-label={`Anzahl ${selected.name}`} type="number" min="0" step="1" value={entry.count} oninput={(event) => { entry.count = Number(event.currentTarget.value); commit(); }} /></td>
                   <td><label class="percent-input"><span class="visually-hidden">Effizienz {selected.name}</span><input type="number" min="0" max="500" step="1" value={entry.efficiency} oninput={(event) => { entry.efficiency = Number(event.currentTarget.value); commit(); }} /><span>%</span></label></td>
                   <td><select aria-label={`Arbeitsmodus ${selected.name}`} bind:value={entry.modeId} onchange={commit}>{#each selected.modes as mode}<option value={mode.id}>{mode.name}</option>{/each}</select></td>
                   <td class="performance-cell"><span>{rowPerformance.label}</span><Tip text={rowPerformance.tooltip} /></td>
                   <td class="actions"><button class="delete-button" onclick={() => removeBuilding(entry.id)}>Löschen</button></td>
                 </tr>
-              {:else}<tr><td class="empty" colspan="6">{allowedBuildings.length ? 'Noch keine Gebäude für dieses Zeitalter eingetragen.' : 'Für dieses Zeitalter sind noch keine Gebäudedaten hinterlegt.'}</td></tr>{/each}
+              {:else}<tr><td class="empty" colspan="6">Noch keine Gebäude eingetragen.</td></tr>{/each}
             </tbody>
           </table>
         </div>
