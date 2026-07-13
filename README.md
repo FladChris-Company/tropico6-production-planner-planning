@@ -16,6 +16,14 @@
 - Import und Export als Sicherung
 - automatische Prüfung vor jeder Veröffentlichung
 
+## Geplante Produktarchitektur
+
+Der Planer wird zu einem modularen Inselwerkzeug ausgebaut. Der zielorientierte Produktionskern wird mit Bevölkerung, Arbeitskräften und einer bewusst qualitativen Logistikbewertung verbunden.
+
+Die geplante Oberfläche zeigt Ergebnisse und konkrete Empfehlungen vor technischen Parametern. Produktionsketten werden als Gebäudekarten und Warenfluss dargestellt; breite Tabellen bleiben Detailansichten.
+
+[Produkt- und UI-Zielarchitektur öffnen](docs/16-produkt-und-ui-zielarchitektur.md)
+
 ## Aus Spielersicht
 
 Der Planer soll nicht nur Zahlen zeigen, sondern typische Fragen während einer Partie beantworten:
@@ -72,6 +80,7 @@ Inseln und Prognosen werden lokal im jeweiligen Browser gespeichert. Sie sind ni
 - [Roadmap](docs/12-roadmap.md)
 - [Offene Fragen](docs/13-offene-fragen.md)
 - [Nicht-Ziele](docs/14-nicht-ziele.md)
+- [Produkt- und UI-Zielarchitektur](docs/16-produkt-und-ui-zielarchitektur.md)
 - [ADR-Verzeichnis](docs/adr/README.md)
 
 ## Hinweis
