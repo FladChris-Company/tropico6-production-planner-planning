@@ -2,7 +2,7 @@
 
 ## Verbindlicher Startumfang
 
-Die erste verifizierte Datenbasis behandelt Inhalte, die in der Kolonialzeit nutzbar oder für kolonialzeitliche Produktion relevant sind. Die Anwendung selbst unterstützt bereits die Auswahl aller vier Zeitalter. Die Gebäudeauswahl enthält alle Gebäude, die bis zum gewählten Zeitalter freigeschaltet wurden. Bereits eingetragene Gebäude bleiben beim Wechsel des Zeitalters sichtbar.
+Der Gebäudekatalog enthält produktions- und transportrelevante Gebäude aller vier Zeitalter. Zeitalter, Arbeitsplätze und Bildungsanforderungen sind abgeglichen. Belastbare Produktionsraten liegen zunächst vor allem für die Kolonialzeit vor; spätere Gebäude bleiben bis zur Verifizierung sichtbar als „Werte fehlen“ gekennzeichnet. Die Gebäudeauswahl enthält alle Gebäude, die bis zum gewählten Zeitalter freigeschaltet wurden. Bereits eingetragene Gebäude bleiben beim Wechsel des Zeitalters sichtbar.
 
 Enthalten werden:
 
@@ -24,7 +24,7 @@ Enthalten werden:
 
 Nicht enthalten sind zunächst:
 
-- noch nicht verifizierte Produktionsgebäude aus Weltkriegen, Kaltem Krieg und Moderne
+- noch nicht verifizierte Produktionsraten aus Weltkriegen, Kaltem Krieg und Moderne
 - vollständige Einwohnerbedarfsplanung
 - Wohnungsplanung
 - Politik und Fraktionen

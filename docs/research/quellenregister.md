@@ -32,7 +32,11 @@ Dieses Register sammelt potenzielle Quellen. Aufnahme bedeutet noch keine fachli
 - Tropico Wiki, „Fireworks Factory“: https://tropico.fandom.com/wiki/Fireworks_Factory
   - Verfügbarkeit in der Kolonialzeit und vier bestätigte Inputvarianten
 - Tropico Wiki, „Buildings (Tropico 6)“: https://tropico.fandom.com/wiki/Buildings_(Tropico_6)
-  - Ära- und Arbeitsplatzabgleich für Feuerwerksfabrik, Köhlerei, Papiermühle und Druckerei
+  - vollständiger Ära- und Arbeitsplatzabgleich für produktions- und transportrelevante Gebäude
+  - zuletzt geprüft am 13. Juli 2026
+- Tropico Wiki, „Goods (Tropico 6)“: https://tropico.fandom.com/wiki/Goods_(Tropico_6)
+  - Rohstoffe, verarbeitete Waren und qualitative Zuordnung zu produzierenden und verbrauchenden Gebäuden
+  - zuletzt geprüft am 13. Juli 2026
 - offizielle Steam-Produktseite „Tropico 6 – Festival“: https://store.steampowered.com/app/1631380/
   - Bestätigung der Feuerwerksfabrik als DLC-Inhalt
 
