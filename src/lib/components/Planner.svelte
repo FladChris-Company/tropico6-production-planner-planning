@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import CalculationPopover from './CalculationPopover.svelte';
   import Tip from './Tip.svelte';
   import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra } from '$lib/domain/data';
   import { calculateEntryPerformance, calculateScenario, fmt } from '$lib/domain/core';
@@ -63,18 +64,40 @@
     if (selected.kind === 'teamster') {
       return {
         label: `${fmt(value.transportCapacity)} Transportkapazität`,
-        tooltip: `Berechnung: ${fmt(entry.count,0)} × ${selected.workers} Arbeiter × ${fmt(entry.staffing,0)} % Besetzung × ${value.loadPerTrip} Ladung × ${fmt(entry.efficiency,0)} % Effizienz × ${fmt(value.modeFactor,2)} Arbeitsmodus × ${fmt(db.settings.transportTripsPerWorker,0)} Fahrten = ${fmt(value.transportCapacity)} Transportkapazität.`
+        blocks: [{
+          title: 'Transportkapazität',
+          formula: [
+            `${fmt(entry.count,0)} ${entry.count === 1 ? 'Büro' : 'Büros'} × ${selected.workers} Arbeiter × ${fmt(entry.staffing,0)} % Besetzung`,
+            `× ${fmt(value.loadPerTrip,0)} Einheiten × ${fmt(db.settings.transportTripsPerWorker,0)} theoretische Fahrten × ${fmt(entry.efficiency,0)} %`,
+            ...(value.modeFactor !== 1 ? [`× ${fmt(value.modeFactor,2)} Arbeitsmodusfaktor`] : [])
+          ],
+          result: `= ${fmt(value.transportCapacity)} Einheiten`
+        }],
+        notes: [
+          `Arbeitsmodus: ${value.mode.name}`,
+          `Modellannahme: ${fmt(db.settings.transportTripsPerWorker,0)} Fahrten je Arbeiter und Berechnungsperiode.`,
+          'Die Transportkapazität ist ein Näherungswert und kann im Spiel abweichen.'
+        ]
       };
     }
-    if (!value.calculable) return {label:'Werte fehlen',tooltip:'Für dieses Gebäude fehlen noch belastbare Produktionswerte.'};
+    if (!value.calculable) return {
+      label:'Werte fehlen',
+      blocks:[{title:'Datengrundlage',formula:[`Für ${selected.name} fehlen noch belastbare Produktionswerte.`]}],
+      notes:['Bis zur Verifizierung wird keine Leistung berechnet.']
+    };
     const inputLabel=Object.entries(value.inputs).map(([good,amount])=>`−${fmt(amount)} ${GOODS[good]?.name??good}`).join(', ');
     const outputLabel=Object.entries(value.outputs).map(([good,amount])=>`+${fmt(amount)} ${GOODS[good]?.name??good}`).join(', ');
-    const formula=(source:Record<string,number|null>,sign:string)=>Object.entries(source).map(([good,rate])=>`${fmt(entry.count,0)} × ${fmt(Number(rate)*selected.workers)} ${GOODS[good]?.name??good} × ${fmt(entry.efficiency,0)} % = ${sign}${fmt(Number(rate)*selected.workers*entry.count*entry.efficiency/100)} ${GOODS[good]?.name??good}`).join('; ');
-    const inputFormula=formula(value.mode.inputs,'−');
-    const outputFormula=formula(value.mode.outputs,'+');
+    const unit = selected.id === 'plantation-sugar' ? (entry.count === 1 ? 'Plantage' : 'Plantagen') : selected.id === 'rum-distillery' ? (entry.count === 1 ? 'Destillerie' : 'Destillerien') : (entry.count === 1 ? 'Gebäude' : 'Gebäude');
+    const blocks=(source:Record<string,number|null>,kind:'Verbrauch'|'Produktion')=>Object.entries(source).map(([good,rate])=>({
+      title:`${GOODS[good]?.name??good}${kind === 'Verbrauch' ? 'verbrauch' : 'produktion'}`,
+      formula:[`${fmt(entry.count,0)} ${unit} × ${fmt(Number(rate)*selected.workers)} ${GOODS[good]?.name??good} × ${fmt(entry.efficiency,0)} %`],
+      result:`= ${fmt(Number(rate)*selected.workers*entry.count*entry.efficiency/100)} ${GOODS[good]?.name??good}`
+    }));
+    const dataNote = selected.dataStatus === 'verified' ? 'Datengrundlage: bestätigte Spieldaten.' : 'Datengrundlage: derzeitiger Schätzwert.';
     return {
       label:[inputLabel,outputLabel].filter(Boolean).join(' → '),
-      tooltip:`Berechnung: Anzahl × Basiswert je Gebäude × Effizienz. ${[inputFormula,outputFormula].filter(Boolean).join('; ')} pro Berechnungsperiode.`
+      blocks:[...blocks(value.mode.inputs,'Verbrauch'),...blocks(value.mode.outputs,'Produktion')],
+      notes:[value.mode.name === 'Standard' || value.mode.name === 'Normalbetrieb' ? `Arbeitsmodus: ${value.mode.name}` : `Berücksichtigt: ${value.mode.name}`,dataNote]
     };
   }
 </script>
@@ -143,7 +166,7 @@
                   <td><input aria-label={`Anzahl ${selected.name}`} type="number" min="0" step="1" value={entry.count} oninput={(event) => { entry.count = Number(event.currentTarget.value); commit(); }} /></td>
                   <td><label class="percent-input"><span class="visually-hidden">Effizienz {selected.name}</span><input type="number" min="0" max="500" step="1" value={entry.efficiency} oninput={(event) => { entry.efficiency = Number(event.currentTarget.value); commit(); }} /><span>%</span></label></td>
                   <td><select aria-label={`Arbeitsmodus ${selected.name}`} bind:value={entry.modeId} onchange={commit}>{#each selected.modes as mode}<option value={mode.id}>{mode.name}</option>{/each}</select></td>
-                  <td class="performance-cell"><span>{rowPerformance.label}</span><Tip text={rowPerformance.tooltip} /></td>
+                  <td class="performance-cell"><span>{rowPerformance.label}</span><CalculationPopover id={`calculation-${entry.id}`} subject={selected.name} blocks={rowPerformance.blocks} notes={rowPerformance.notes} enabled={db.settings.tooltips} /></td>
                   <td class="actions"><button class="delete-button" onclick={() => removeBuilding(entry.id)}>Löschen</button></td>
                 </tr>
               {:else}<tr><td class="empty" colspan="6">Noch keine Gebäude eingetragen.</td></tr>{/each}
