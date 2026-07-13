@@ -17,6 +17,7 @@
   $: projectBuildings = BUILDINGS.filter((item) => item.dlc === 'base' || project?.dlcs.includes(item.dlc));
   $: selectableBuildings = projectBuildings.filter((item) => buildingAvailableInEra(item, project?.era ?? 'colonial'));
   $: result = scenario ? calculateScenario({ scenario, buildings: projectBuildings, goods: GOODS, settings: db.settings, era: project?.era }) : null;
+  $: exportableGoods = result ? result.balances.filter((item) => item.exportable > .01).sort((a,b) => b.exportable - a.exportable) : [];
 
   onMount(() => {
     db = load();
@@ -62,15 +63,18 @@
     const selected = building(entry.buildingId);
     const value = calculateEntryPerformance({entry, building:selected, era:project.era, settings:db.settings});
     if (selected.kind === 'infrastructure') {
+      const education = {'uneducated':'Ungelernt','high-school':'Oberschule','college':'Hochschule'}[selected.education];
       const description = selected.id === 'dock'
         ? 'Der Hafen wird als Arbeitsplatz berücksichtigt. Eine eigene Umschlagkapazität ist noch nicht Teil des Modells.'
         : selected.id === 'construction-office'
           ? 'Das Baubüro wird als Arbeitsplatz berücksichtigt. Baugeschwindigkeit und Bauleistung werden noch nicht berechnet.'
-          : 'Der Palast wird als Arbeitsplatz berücksichtigt und besitzt keine Warenproduktion.';
+          : selected.id === 'palace'
+            ? 'Der Palast wird als Arbeitsplatz berücksichtigt und besitzt keine Warenproduktion.'
+            : `${selected.name} wird vollständig in der Arbeiterberechnung berücksichtigt und besitzt keine modellierte Warenproduktion.`;
       return {
-        label: 'Nicht berechnet',
+        label: selected.id === 'dock' || selected.id === 'construction-office' ? 'Nicht berechnet' : 'Keine Warenleistung',
         blocks: [{title:'Funktion im Modell',formula:[description]}],
-        notes: [`Arbeitsplätze: ${fmt(entry.count * selected.workers,0)} Ungelernte bei ${fmt(entry.count,0)} ${entry.count === 1 ? 'Gebäude' : 'Gebäuden'}.`]
+        notes: [`Arbeitsplätze: ${fmt(entry.count * selected.workers,0)} · Bildungsgrad: ${education} · ${fmt(entry.count,0)} ${entry.count === 1 ? 'Gebäude' : 'Gebäude'}.`]
       };
     }
     if (selected.kind === 'teamster') {
@@ -137,10 +141,10 @@
         </div>
 
         <div class="overview-grid">
-          <section class="summary">
+          <section class="summary surplus-summary">
             <h2>Überschuss</h2>
-            {#if result.topExports.length}
-              <table class="summary-table"><tbody>{#each result.topExports as item}<tr><td>{GOODS[item.goodId]?.name}</td><td>{fmt(item.exportable)}</td></tr>{/each}</tbody></table>
+            {#if exportableGoods.length}
+              <div class="summary-scroll" role="region" aria-label="Alle Warenüberschüsse"><table class="summary-table"><tbody>{#each exportableGoods as item}<tr><td>{GOODS[item.goodId]?.name}</td><td>{fmt(item.exportable)}</td></tr>{/each}</tbody></table></div>
             {:else}<p>Kein exportierbarer Überschuss.</p>{/if}
           </section>
           <section class="summary">
@@ -226,6 +230,7 @@
   .summary-table { min-width: 0; }
   .summary-table th, .summary-table td { padding: 9px 0; background: transparent; }
   .summary-table th:last-child, .summary-table td:last-child { text-align: right; }
+  .summary-scroll { max-height: 154px; overflow-y: auto; overscroll-behavior: contain; padding-right: 8px; scrollbar-gutter: stable; }
   .notices article { padding: 10px 0; border-bottom: 1px solid #e1e5e7; }
   .notices article:first-child { padding-top: 0; }
   .notices article:last-child { border-bottom: 0; }

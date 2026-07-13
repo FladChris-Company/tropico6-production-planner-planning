@@ -1,6 +1,10 @@
 # Speicherung und Datenaustausch
 
-## Primäre Speicherung
+## Aktueller Umsetzungsstand
+
+Die produktive Minimalversion speichert Änderungen automatisch in `localStorage` des verwendeten Browsers. Die Daten bleiben beim normalen Schließen erhalten, sind aber ohne Sicherung nicht gegen gelöschte Websitedaten, Inkognito-Sitzungen oder einen Gerätewechsel geschützt. JSON-Import und -Export sowie die spätere Umstellung auf IndexedDB bleiben verpflichtende Ausbauschritte.
+
+## Primäre Zielspeicherung
 
 Persönliche Daten werden lokal im Browser in IndexedDB gespeichert.
 

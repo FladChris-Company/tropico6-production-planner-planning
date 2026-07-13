@@ -2,7 +2,7 @@
 
 ## Verbindlicher Startumfang
 
-Der Gebäudekatalog enthält produktions- und transportrelevante Gebäude aller vier Zeitalter. Zeitalter, Arbeitsplätze und Bildungsanforderungen sind abgeglichen. Belastbare Produktionsraten liegen zunächst vor allem für die Kolonialzeit vor; spätere Gebäude bleiben bis zur Verifizierung sichtbar als „Werte fehlen“ gekennzeichnet. Die Gebäudeauswahl enthält alle Gebäude, die bis zum gewählten Zeitalter freigeschaltet wurden. Bereits eingetragene Gebäude bleiben beim Wechsel des Zeitalters sichtbar.
+Der Gebäudekatalog enthält alle Gebäude mit Arbeitsplätzen sowie produktions- und transportrelevante Gebäude aller vier Zeitalter. Zeitalter, Arbeitsplätze und Bildungsanforderungen sind abgeglichen. Nicht produzierende Gebäude fließen in die Arbeiterberechnung ein, ohne den Warenfluss zu verändern. Belastbare Produktionsraten liegen zunächst vor allem für die Kolonialzeit vor; spätere Gebäude bleiben bis zur Verifizierung sichtbar als „Werte fehlen“ gekennzeichnet. Die Gebäudeauswahl enthält alle Gebäude, die bis zum gewählten Zeitalter freigeschaltet wurden. Bereits eingetragene Gebäude bleiben beim Wechsel des Zeitalters sichtbar.
 
 Enthalten werden:
 
@@ -28,8 +28,8 @@ Nicht enthalten sind zunächst:
 - vollständige Einwohnerbedarfsplanung
 - Wohnungsplanung
 - Politik und Fraktionen
-- Militär
-- Tourismus
+- militärische Wirkungsberechnung
+- touristische Wirkungsberechnung
 - Strom
 - vollständige Finanzsimulation
 

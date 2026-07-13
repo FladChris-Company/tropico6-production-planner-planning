@@ -8,6 +8,10 @@ const scenario=(entries:Entry[]):Scenario=>({id:'test',name:'Test',type:'current
 const calculate=(entries:Entry[])=>calculateScenario({scenario:scenario(entries),buildings:BUILDINGS,goods:GOODS,settings:DEFAULT_SETTINGS});
 
 describe('Kolonialzeit-Berechnung',()=>{
+  it('enthält keine doppelten Gebäude-IDs',()=>{
+    expect(new Set(BUILDINGS.map((building)=>building.id)).size).toBe(BUILDINGS.length);
+  });
+
   it('versorgt eine Dunder-Destille mit zwei Zuckerplantagen',()=>{
     const result=calculate([entry('sugar','plantation-sugar',2),entry('rum','rum-distillery',1,'dunder')]);
     expect(result.chainSummaries[0].utilization).toBe(1);
@@ -32,6 +36,12 @@ describe('Kolonialzeit-Berechnung',()=>{
     const result=calculate([entry('sugar','plantation-sugar',2),entry('rum','rum-distillery',1,'dunder')]);
     expect(result.educationJobs).toEqual({'uneducated':20,'high-school':0,'college':0});
     expect(result.educationFilled.uneducated).toBe(20);
+  });
+
+  it('zählt auch nicht produzierende Gebäude in der Arbeiterberechnung',()=>{
+    const result=calculate([entry('palace','palace',1),entry('newspaper','newspaper',1)]);
+    expect(result.educationJobs).toEqual({'uneducated':4,'high-school':4,'college':0});
+    expect(result.transportDemand).toBe(0);
   });
 
   it('plant für eine Destille zwei Zuckerplantagen',()=>{

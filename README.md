@@ -13,7 +13,7 @@
 - Fokus: ausschließlich Kolonialzeit
 - Grundspiel und koloniale DLC-Produktionsgebäude
 - lokale Speicherung im Browser
-- Import und Export als Sicherung
+- Import und Export als geplanter Sicherungsschritt
 - automatische Prüfung vor jeder Veröffentlichung
 
 ## Produktarchitektur
@@ -56,12 +56,12 @@ Der Planer soll nicht nur Zahlen zeigen, sondern typische Fragen während einer 
 - Arbeitsplätze und offene Stellen
 - Transportbüros und Transporteinschätzung
 - DLC-Filter für koloniale Produktionsinhalte
-- JSON-Import und -Export
+- JSON-Import und -Export (geplant)
 - mobile Darstellung und Offline-Grundlage
 
 ## Speicherung
 
-Inseln und Prognosen werden lokal im jeweiligen Browser gespeichert. Sie sind nicht öffentlich sichtbar und werden nicht an einen Server übertragen. Für Sicherungen und den Wechsel auf ein anderes Gerät steht der JSON-Export zur Verfügung.
+Inseln und Prognosen werden aktuell automatisch im lokalen Speicher des jeweiligen Browsers gespeichert. Sie sind nicht öffentlich sichtbar und werden nicht an einen Server übertragen. Eine Sicherung per JSON-Export ist geplant, aber in der Minimaloberfläche noch nicht verfügbar.
 
 ## Lokale Entwicklung
 
