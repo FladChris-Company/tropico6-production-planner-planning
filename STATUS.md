@@ -2,36 +2,35 @@
 
 ## Phase
 
-Private Entwicklungs- und Architekturplanung.
+Produktiv nutzbare Svelte-Anwendung für die Kolonialzeit.
 
-## Erledigt
+## Umgesetzt
 
-- Kernproblem beschrieben
-- Kolonialzeit als erster fachlicher Scope festgelegt
-- DLC-Unterstützung grundsätzlich vorgesehen
-- freie Cluster als zentrales Konzept festgelegt
-- Ist-Stand und Prognosen getrennt
-- Local-First-Webanwendung als Zielbild gewählt
-- lokale Browserdatenbank als primäre Speicherung vorgesehen
-- statisches Hosting als bevorzugte erste Bereitstellung vorgesehen
-- Backend und Benutzerkonten für die erste Version ausgeschlossen
+- responsive SvelteKit-Oberfläche mit TypeScript
+- statische Bereitstellung über GitHub Pages
+- Local-First-Speicherung und Offline-Grundlage
+- mehrere Inselprojekte, Cluster und Ausbauprognosen
+- Kolonialzeit-Gebäude des Grundspiels und auswählbare DLC-Inhalte
+- Produktions-, Verbrauchs-, Reserve- und Exportbilanz
+- theoretische und erwartete Produktion mit sichtbaren Annahmen
+- Effizienz, Besetzung, Arbeitsmodi und individuelle Raten
+- Arbeitsplätze und qualitative Transportbewertung
+- rückwärts aufgelöste Bauempfehlung für berechenbare Produktionsketten
+- priorisierte Diagnosen und erklärende Tooltips
+- JSON-Import und -Export
+- automatisierte Fachtests, Typprüfung und Produktions-Build
 
-## In Arbeit
+## Bewusste Einschränkungen
 
-- vollständige Recherche aller kolonialzeitlichen Produktionsgebäude
-- Produktions- und Verbrauchswerte verifizieren
-- Upgrades und Arbeitsmodi erfassen
-- DLC-Abgrenzung prüfen
-- Transportmodell kalibrieren
-- Datenmodell fachlich finalisieren
-- UX-Flows konkretisieren
+- ausschließlich Kolonialzeit
+- keine exakte Verkehrs-, Anwesenheits- oder Finanzsimulation
+- keine zentrale Speicherung und keine Benutzerkonten
+- DLC-Raten ohne belastbare Quelle werden nicht erfunden; Nutzer können sie selbst kalibrieren
+- Bevölkerung und allgemeine Bedürfnisversorgung bleiben ein späteres Modul
 
-## Noch nicht begonnen
+## Nächste fachliche Arbeiten
 
-- UI-Design
-- technische Implementierung
-- Tests
-- Deployment
-- öffentliche Dokumentation
-- finale Namensfindung
-- Lizenzwahl
+- unbekannte Produktionsraten durch reproduzierbare Spielmessungen verifizieren
+- weitere Upgrades und Arbeitsmodi mit Quellenstatus ergänzen
+- Transportmodell mit Spielbeobachtungen kalibrieren
+- rechtlich nutzbare Gebäude- und Warenillustrationen ergänzen

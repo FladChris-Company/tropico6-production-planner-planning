@@ -23,6 +23,19 @@ Dieses Register sammelt potenzielle Quellen. Aufnahme bedeutet noch keine fachli
 - Community-Beiträge zu Minenvorkommen
 - Community-Beiträge zu Waldregeneration
 
+## Konkret verwendete Quellen
+
+- Steam-Guide „Industry Profits“ von Marquez von Hinten: https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953
+  - Basisraten je Arbeiter-Arbeitstag bei 100 Prozent Effizienz
+  - Grundspielwerte für Plantagen, Farmen, Minen, Sägewerk, Rumdestillerie und Gerberei
+  - Stand des Guides: April 2019; Werte bleiben deshalb mit Quellenstatus versehen
+- Tropico Wiki, „Fireworks Factory“: https://tropico.fandom.com/wiki/Fireworks_Factory
+  - Verfügbarkeit in der Kolonialzeit und vier bestätigte Inputvarianten
+- Tropico Wiki, „Buildings (Tropico 6)“: https://tropico.fandom.com/wiki/Buildings_(Tropico_6)
+  - Ära- und Arbeitsplatzabgleich für Feuerwerksfabrik, Köhlerei, Papiermühle und Druckerei
+- offizielle Steam-Produktseite „Tropico 6 – Festival“: https://store.steampowered.com/app/1631380/
+  - Bestätigung der Feuerwerksfabrik als DLC-Inhalt
+
 ## Noch zu ergänzen
 
 Für jede konkrete Quelle:

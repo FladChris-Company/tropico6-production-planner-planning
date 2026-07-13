@@ -1,10 +1,15 @@
-name: Test and deploy Colonial beta
+name: Test and deploy Svelte app
 
 on:
   push:
     branches: [main]
     paths:
-      - 'release/v2/**'
+      - 'src/**'
+      - 'static/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'svelte.config.js'
+      - 'vite.config.ts'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -30,28 +35,17 @@ jobs:
         with:
           node-version: 22
 
-      - name: Reconstruct release
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p .release
-          cat release/v2/parts/part-* | tr -d '\n\r' | base64 --decode > .release/source.tar.gz
-          echo '6c913ca075b91fd55bb5dc0b283f539fa32526f7fd87700de8af70d310368569  .release/source.tar.gz' | sha256sum --check --strict
-          tar -xzf .release/source.tar.gz -C .release
-          test -f .release/index.html
-          test -f .release/package.json
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check types and components
+        run: npm run check
 
       - name: Run calculation tests
-        working-directory: .release
         run: npm test
 
-      - name: Validate JavaScript syntax
-        working-directory: .release
-        run: |
-          node --check core.js
-          node --check game-data.js
-          node --check app.js
-          node --check sw.js
+      - name: Build static application
+        run: npm run build
 
       - name: Report successful tests
         env:
@@ -70,7 +64,7 @@ jobs:
       - name: Upload static application
         uses: actions/upload-pages-artifact@v4
         with:
-          path: .release
+          path: build
 
       - name: Report successful Pages preparation
         env:
@@ -114,7 +108,7 @@ jobs:
           gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
             -f state=success \
             -f context='tropico/pages-deploy' \
-            -f description='Colonial beta v0.2.0 is live' \
+            -f description='Colonial Svelte planner is live' \
             -f target_url="$TARGET_URL"
 
       - name: Report deployment failure

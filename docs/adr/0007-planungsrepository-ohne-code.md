@@ -1,6 +1,6 @@
 # ADR-0007: Planungsrepository ohne Code
 
-- Status: akzeptiert
+- Status: ersetzt durch ADR-0009
 - Datum: 2026-07-13
 
 ## Kontext

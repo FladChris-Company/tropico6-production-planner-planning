@@ -1,7 +1,7 @@
 # Tropico 6 Produktionsplaner
 
-> **Status: öffentliche Beta für die Kolonialzeit**  
-> Die Anwendung wird aktiv entwickelt. Produktionswerte mit unsicherer Quellenlage bleiben erkennbar und können angepasst werden.
+> **Status: produktiv nutzbare Version für die Kolonialzeit**
+> Produktionswerte mit unsicherer Quellenlage bleiben erkennbar und können direkt angepasst werden.
 
 ## Anwendung
 
@@ -9,18 +9,18 @@
 
 ## Aktueller Stand
 
-- Version: `v0.2.0-beta`
+- Version: `v1.0.0`
 - Fokus: ausschließlich Kolonialzeit
 - Grundspiel und koloniale DLC-Produktionsgebäude
 - lokale Speicherung im Browser
 - Import und Export als Sicherung
 - automatische Prüfung vor jeder Veröffentlichung
 
-## Geplante Produktarchitektur
+## Produktarchitektur
 
-Der Planer wird zu einem modularen Inselwerkzeug ausgebaut. Der zielorientierte Produktionskern wird mit Bevölkerung, Arbeitskräften und einer bewusst qualitativen Logistikbewertung verbunden.
+Der Planer ist als modulare, statische SvelteKit-Anwendung umgesetzt. Der zielorientierte Produktionskern verbindet Produktionsbilanz, Arbeitsplätze und eine bewusst qualitative Logistikbewertung.
 
-Die geplante Oberfläche zeigt Ergebnisse und konkrete Empfehlungen vor technischen Parametern. Produktionsketten werden als Gebäudekarten und Warenfluss dargestellt; breite Tabellen bleiben Detailansichten.
+Die Oberfläche zeigt Ergebnisse und konkrete Empfehlungen vor technischen Parametern. Produktionsgebäude werden als Karten dargestellt; die Warenbilanz bleibt eine gezielte Detailansicht.
 
 [Produkt- und UI-Zielarchitektur öffnen](docs/16-produkt-und-ui-zielarchitektur.md)
 
@@ -62,6 +62,23 @@ Der Planer soll nicht nur Zahlen zeigen, sondern typische Fragen während einer 
 ## Speicherung
 
 Inseln und Prognosen werden lokal im jeweiligen Browser gespeichert. Sie sind nicht öffentlich sichtbar und werden nicht an einen Server übertragen. Für Sicherungen und den Wechsel auf ein anderes Gerät steht der JSON-Export zur Verfügung.
+
+## Lokale Entwicklung
+
+Voraussetzung ist Node.js 22.
+
+```text
+npm install
+npm run dev
+```
+
+Qualitätsprüfung und Produktions-Build:
+
+```text
+npm run check
+npm test
+npm run build
+```
 
 ## Dokumentation
 

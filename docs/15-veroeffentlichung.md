@@ -1,50 +1,45 @@
 # Veröffentlichung und rechtlicher Rahmen
 
-## Status dieses Repositories
+## Aktueller Stand
 
-- privat
-- interne Entwicklungsplanung
-- kein finales Produktrepository
-- keine Anwendung
-- keine öffentliche Bereitstellung
-- keine Lizenz festgelegt
+Die Anwendung wird als statische SvelteKit-Webanwendung über GitHub Pages veröffentlicht. GitHub Actions führt vor jeder Veröffentlichung Typprüfung, Komponentenanalyse, Fachtests und den Produktions-Build aus.
 
-## Späteres Zielbild
+Die Anwendung benötigt kein Backend und kein Benutzerkonto. Inselprojekte, Prognosen, Notizen und persönliche Einstellungen bleiben lokal im Browser. Für Sicherung und Gerätewechsel steht ein versionierter JSON-Export zur Verfügung.
 
-Für eine öffentliche Version ist ein separates oder bewusst bereinigtes Repository vorgesehen.
+## Noch zu klären
 
-Vor Veröffentlichung zu klären:
+- finale Open-Source-Lizenz
+- langfristiger Produktname und Branding
+- rechtlich nutzbare Gebäude- und Warenillustrationen
+- Beitragspolitik für Community-Daten
+- Haftungsausschluss für Näherungs- und Community-Werte
 
-- Produktname
-- Open-Source-Lizenz
-- Markenhinweis
-- Umgang mit Screenshots und Bildmaterial
-- Datenquellen und Quellenangaben
-- Haftungsausschluss für Näherungswerte
-- Datenschutz bei rein lokaler Speicherung
-- Beitragspolitik
+## Bereitstellung
 
-## Vorgesehene Bereitstellung
-
-- statische Webanwendung
+- SvelteKit mit statischem Adapter
 - GitHub Actions
-- GitHub Pages
+- GitHub Pages unter dem Repository-Unterpfad
+- installierbare PWA und Offline-Cache
 - kein Backend für die Kernversion
 
 ## Trennung der Daten
 
-Öffentlich:
+Im Repository und damit öffentlich:
 
-- Quellcode der späteren Anwendung
-- Spieldaten
+- Anwendungscode
+- Stammdaten und Quellenstatus
 - Berechnungslogik
 - Dokumentation
-- Testfälle
+- automatisierte Testfälle
 
-Lokal beim Nutzer:
+Nur lokal beim Nutzer:
 
 - Inselprojekte
-- Prognosen
-- Lagerstände
-- Notizen
+- Ist-Stände und Prognosen
+- Cluster und Gebäudeeinträge
+- individuelle Messwerte und Notizen
 - persönliche Einstellungen
+
+## Markenhinweis
+
+Tropico 6 und die zugehörigen Bezeichnungen sind Eigentum der jeweiligen Rechteinhaber. Der Produktionsplaner ist ein unabhängiges, nicht offizielles Fan-Werkzeug.
