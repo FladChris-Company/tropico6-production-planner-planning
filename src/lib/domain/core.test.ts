@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BUILDINGS, DEFAULT_SETTINGS, GOODS, buildingAvailableInEra } from './data';
-import { buildGoalPlan, calculateEntryPerformance, calculateScenario, goalRequirements } from './core';
+import { buildGoalPlan, calculateEntryPerformance, calculateScenario, goalRequirements, supplyActionForEntry } from './core';
 import type { Entry, Scenario } from './types';
 
 const entry=(id:string,buildingId:string,count:number,modeId='standard',status:Entry['status']='existing'):Entry=>({id,clusterId:'main',buildingId,modeId,count,efficiency:100,staffing:100,distance:'',status,note:'',rateOverrides:{inputs:{},outputs:{}}});
@@ -23,6 +23,17 @@ describe('Kolonialzeit-Berechnung',()=>{
     const result=calculate([entry('sugar','plantation-sugar',2),entry('rum','rum-distillery',2,'dunder')]);
     expect(result.chainSummaries.some(x=>x.utilization<.6)).toBe(true);
     expect(result.diagnostics.some(x=>x.severity==='error')).toBe(true);
+  });
+
+  it('liefert für einen Gebäudeengpass eine direkt ausführbare Bauaktion',()=>{
+    const result=calculate([entry('sugar','plantation-sugar',2),entry('rum','rum-distillery',2,'dunder')]);
+
+    expect(supplyActionForEntry(result,'rum')).toEqual({
+      buildingId:'plantation-sugar',
+      buildingName:'Zuckerplantage',
+      goodId:'sugar',
+      count:2
+    });
   });
 
   it('berücksichtigt Besetzung und Erwartungsprofil',()=>{

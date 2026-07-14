@@ -17,6 +17,8 @@ Produktiv nutzbare Svelte-Anwendung für die Kolonialzeit.
 - belegte koloniale Produktionswege und Testchargen auch ohne erfundene Zeitrate
 - Produktions-, Verbrauchs-, Reserve- und Exportbilanz
 - theoretische und erwartete Produktion mit sichtbaren Annahmen
+- kompakte, mobile Gebäudekarten statt einer horizontal scrollenden Haupttabelle
+- durchsuchbarer Hinzufügen-Dialog und direkte Aktionen für fehlende Rohstoffgebäude
 - aufklappbare Gebäudedetails für Status, Besetzung, Cluster, Entfernung, individuelle Raten, externe Versorgung und Notizen
 - belegte koloniale Verbesserungen mit Auswirkungen auf Effizienz und Arbeitsplätze
 - Arbeitsplätze und qualitative Transportbewertung

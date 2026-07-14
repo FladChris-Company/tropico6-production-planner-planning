@@ -149,6 +149,20 @@ export function calculateScenario({scenario,buildings,goods,settings,era='coloni
   return {totalBuildings,plannedBuildings,totalJobs,filledJobs,openJobs,educationJobs,educationFilled,teamsterOffices,transportDemand,transportCapacity,transportDifference,transportUtilization,requiredTeamsterOffices,teamsterOfficeDifference,unknownEntries,balances,chainSummaries,diagnostics,entryResults,suppliedChains:chainSummaries.filter(x=>x.utilization>=.999).length,totalChains:chainSummaries.length,topExports:balances.filter(x=>x.exportable>.01).sort((a,b)=>b.exportable-a.exportable).slice(0,5)};
 }
 
+export function supplyActionForEntry(result: ReturnType<typeof calculateScenario>, entryId: string) {
+  const chain = result.chainSummaries.find((item) => item.entryId === entryId);
+  const shortage = chain?.inputs
+    .filter((input) => input.missing > .01 && input.source && input.suggestedSourceCount && input.suggestedSourceCount > 0)
+    .sort((left, right) => right.missing - left.missing)[0];
+  if (!shortage?.source || !shortage.suggestedSourceCount) return null;
+  return {
+    buildingId: shortage.source.buildingId,
+    buildingName: shortage.source.name,
+    goodId: shortage.goodId,
+    count: shortage.suggestedSourceCount
+  };
+}
+
 export function goalRequirements(buildingId:string,count:number,modeId:string,buildings:Building[],settings:Settings,goods:Record<string,{name:string}>={}) {
   const rows:{buildingId:string;name:string;icon:string;exact:number;recommended:number;reason:string;level:number;status:string}[]=[];
   const visit=(id:string,amount:number,selectedMode:string|undefined,level:number,reason:string)=>{

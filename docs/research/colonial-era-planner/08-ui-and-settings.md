@@ -2,6 +2,12 @@
 
 Stand: 13. Juli 2026
 
+> Hinweis zum Umsetzungsstand: Die spätere Spieler- und MVP-Entscheidung in
+> `docs/11-bedienkonzept.md` und `docs/16-produkt-und-ui-zielarchitektur.md`
+> ersetzt die hier untersuchte Tabellen-Hauptansicht durch kompakte Karten.
+> Die Such- und Filterregeln dieses Dokuments bleiben für den Hinzufügen-Dialog
+> relevant.
+
 ## Grundsatz
 
 Die bestehende direkte Gebäudetabelle bleibt der Hauptarbeitsbereich. Die neue Funktionalität wird nicht als separates komplexes Dashboard vor die eigentliche Arbeit gesetzt.

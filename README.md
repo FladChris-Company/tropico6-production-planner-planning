@@ -43,12 +43,14 @@ Der Planer soll nicht nur Zahlen zeigen, sondern typische Fragen während einer 
 
 - mehrere Inselprojekte
 - frei definierbare Cluster
-- schneller Gebäudeeintrag mit Anzahl und Cluster
+- durchsuchbare Gebäudeauswahl, die erst nach einer bewussten Auswahl einen Eintrag anlegt
+- kompakte Gebäudekarten mit Ergebnis und Engpass vor den Eingaben
+- direkte Planungsaktionen für fehlende Rohstoffgebäude
 - Vorlagen für Rum, Bretter und Leder
 - Gebäude hinzufügen, duplizieren, deaktivieren und entfernen
 - Grundeffizienz, Personalbesetzung und Arbeitsmodi
 - gebaut, geplant und deaktiviert direkt am Gebäude
-- aufklappbare Details für Cluster, Entfernung, Notizen und eigene Produktionsraten
+- aufklappbare Expertendetails für Gebäudetyp, Arbeitsmodus, Cluster, Entfernung, Notizen und eigene Produktionsraten
 - externe Warenversorgung direkt an den betroffenen Fabrikeingängen
 - belegte koloniale Verbesserungen aus der manuellen Wissensquelle
 - unveränderlicher Ist-Stand

@@ -1,19 +1,19 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import BuildingDetails from './BuildingDetails.svelte';
-  import CalculationPopover from './CalculationPopover.svelte';
+  import BuildingCard from './BuildingCard.svelte';
+  import BuildingPicker from './BuildingPicker.svelte';
   import ProjectBackup from './ProjectBackup.svelte';
   import ProductionGoalPlanner from './ProductionGoalPlanner.svelte';
   import Tip from './Tip.svelte';
   import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra, describeDataStatus, missingCalculationLabel, withDataStatusIndicator } from '$lib/domain/data';
-  import { calculateEntryPerformance, calculateScenario, fmt } from '$lib/domain/core';
+  import { calculateEntryPerformance, calculateScenario, fmt, supplyActionForEntry } from '$lib/domain/core';
   import { load, newEntry, save, seed } from '$lib/domain/storage';
   import type { Database, Entry } from '$lib/domain/types';
 
   let ready = false;
   let db: Database = seed();
   let tab: 'overview' | 'planning' | 'buildings' | 'backup' = 'overview';
-  let expandedEntryId = '';
+  let pickerOpen = false;
 
   $: project = db.projects.find((item) => item.id === db.activeProjectId) ?? db.projects[0];
   $: scenario = project?.scenarios.find((item) => item.id === project.selectedId) ?? project?.scenarios[0];
@@ -42,13 +42,22 @@
     return BUILDINGS.find((item) => item.id === id)!;
   }
 
-  function addBuilding() {
-    const first = selectableBuildings.find((item) => item.kind === 'production') ?? selectableBuildings[0];
-    if (!first) return;
-    const entry = newEntry(first.id, scenario.clusters[0].id, 'existing');
-    entry.modeId = first.modes[0].id;
+  function addBuilding(buildingId: string, status: Entry['status'] = 'existing', count = 1, clusterId = scenario.clusters[0].id) {
+    const selected = building(buildingId);
+    const entry = newEntry(selected.id, clusterId, status);
+    entry.modeId = selected.modes[0].id;
+    entry.count = count;
     scenario.entries.push(entry);
     commit();
+  }
+
+  function selectBuilding(buildingId: string) {
+    addBuilding(buildingId);
+    pickerOpen = false;
+  }
+
+  function planSupply(entry: Entry, action: NonNullable<ReturnType<typeof supplyActionForEntry>>) {
+    addBuilding(action.buildingId, 'planned', action.count, entry.clusterId);
   }
 
   function changeBuilding(entry: Entry) {
@@ -61,11 +70,8 @@
 
   function removeBuilding(id: string) {
     scenario.entries = scenario.entries.filter((entry) => entry.id !== id);
-    if (expandedEntryId === id) expandedEntryId = '';
     commit();
   }
-
-  const statusLabel = (status: Entry['status']) => ({existing:'Gebaut',planned:'Geplant',disabled:'Deaktiviert'})[status];
 
   function buildingOptions(entry: Entry) {
     const selected = building(entry.buildingId);
@@ -172,6 +178,15 @@
           </div>
         </div>
 
+        <section class:error={result.diagnostics[0].severity === 'error'} class:warning={result.diagnostics[0].severity === 'warning'} class="priority">
+          <div>
+            <span>Was jetzt wichtig ist</span>
+            <h2>{result.diagnostics[0].title}</h2>
+            <p>{result.diagnostics[0].detail}</p>
+          </div>
+          {#if result.diagnostics[0].severity !== 'success'}<button onclick={() => (tab = 'buildings')}>Gebäude prüfen</button>{/if}
+        </section>
+
         <div class="overview-grid">
           <section class="summary surplus-summary">
             <h2>Überschuss</h2>
@@ -201,63 +216,72 @@
         <div class="page-header">
           <div>
             <h1>Gebäude</h1>
-            <p>Gebäude, Anzahl und Grundeffizienz deiner Insel. Weitere Angaben liegen übersichtlich unter „Details“.</p>
+            <p>Leistung und Engpässe zuerst. Selten benötigte Einstellungen liegen in den Expertendetails.</p>
           </div>
-          <button class="add-button" disabled={!selectableBuildings.length} onclick={addBuilding}>Gebäude hinzufügen</button>
+          <button class="add-button" disabled={!selectableBuildings.length} onclick={() => (pickerOpen = true)}>Gebäude hinzufügen</button>
         </div>
 
-        <div class="building-list">
-          <table>
-            <thead><tr><th>Gebäude</th><th>Anzahl</th><th>Grundeffizienz</th><th>Arbeitsmodus</th><th>Leistung</th><th><span class="visually-hidden">Aktionen</span></th></tr></thead>
-            <tbody>
-              {#each scenario.entries as entry (entry.id)}
-                {@const selected = building(entry.buildingId)}
-                {@const rowPerformance = performance(entry)}
-                <tr class:disabled-row={entry.status === 'disabled'}>
-                  <td><span class={`entry-status ${entry.status}`}>{statusLabel(entry.status)}</span><select aria-label="Gebäude" bind:value={entry.buildingId} onchange={() => changeBuilding(entry)}>{#each buildingOptions(entry) as option}<option value={option.id}>{option.name}</option>{/each}</select></td>
-                  <td><input aria-label={`Anzahl ${selected.name}`} type="number" min="0" step="1" value={entry.count} oninput={(event) => { entry.count = Number(event.currentTarget.value); commit(); }} /></td>
-                  <td><label class="percent-input"><span class="visually-hidden">Effizienz {selected.name}</span><input type="number" min="0" max="500" step="1" value={entry.efficiency} oninput={(event) => { entry.efficiency = Number(event.currentTarget.value); commit(); }} /><span>%</span></label></td>
-                  <td><select aria-label={`Arbeitsmodus ${selected.name}`} bind:value={entry.modeId} onchange={commit}>{#each selected.modes as mode}<option value={mode.id}>{mode.name}</option>{/each}</select></td>
-                  <td class="performance-cell"><span>{rowPerformance.label}</span><CalculationPopover id={`calculation-${entry.id}`} subject={selected.name} blocks={rowPerformance.blocks} notes={rowPerformance.notes} enabled={db.settings.tooltips} /></td>
-                  <td class="actions"><button class="details-button" aria-expanded={expandedEntryId === entry.id} onclick={() => (expandedEntryId = expandedEntryId === entry.id ? '' : entry.id)}>{expandedEntryId === entry.id ? 'Schließen' : 'Details'}</button><button class="delete-button" onclick={() => removeBuilding(entry.id)}>Löschen</button></td>
-                </tr>
-                {#if expandedEntryId === entry.id}<tr class="details-row"><td colspan="6"><BuildingDetails {entry} building={selected} {scenario} goods={GOODS} onChanged={commit} /></td></tr>{/if}
-              {:else}<tr><td class="empty" colspan="6">Noch keine Gebäude eingetragen.</td></tr>{/each}
-            </tbody>
-          </table>
+        <div class="building-grid">
+          {#each scenario.entries as entry (entry.id)}
+            {@const selected = building(entry.buildingId)}
+            {@const rowPerformance = performance(entry)}
+            {@const supplyAction = supplyActionForEntry(result, entry.id)}
+            <BuildingCard
+              {entry}
+              building={selected}
+              availableBuildings={buildingOptions(entry)}
+              {scenario}
+              goods={GOODS}
+              performance={rowPerformance}
+              {supplyAction}
+              tooltips={db.settings.tooltips}
+              onChanged={commit}
+              onBuildingChanged={() => changeBuilding(entry)}
+              onPlanSupply={(action) => planSupply(entry, action)}
+              onRemove={() => removeBuilding(entry.id)}
+            />
+          {:else}<section class="empty"><h2>Noch keine Gebäude erfasst</h2><p>Füge dein erstes gebautes Gebäude hinzu, um den Inselstand zu berechnen.</p><button onclick={() => (pickerOpen = true)}>Gebäude hinzufügen</button></section>{/each}
         </div>
       {/if}
+
+      <BuildingPicker buildings={selectableBuildings} goods={GOODS} open={pickerOpen} onSelect={selectBuilding} onClose={() => (pickerOpen = false)} />
     </section>
   </main>
 {/if}
 
 <style>
   :global(*) { box-sizing: border-box; }
-  :global(body) { margin: 0; background: #f4f5f6; color: #1f2529; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  :global(body) { margin: 0; background: #f4e8cf; color: #2b2925; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
   :global(button), :global(input), :global(select) { font: inherit; }
 
   main { min-height: 100vh; }
-  .app-header { height: 58px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; border-bottom: 1px solid #cfd5d9; background: #fff; }
+  .app-header { height: 62px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; border-bottom: 3px solid #d9a441; background: #234f45; color: #fff; }
   .app-header > div { display: flex; align-items: center; gap: 12px; }
-  .product { font-size: 14px; font-weight: 700; }
-  .project-select { padding-left: 12px; border-left: 1px solid #cfd5d9; }
-  .project-select select { width: auto; max-width: 190px; min-width: 110px; height: 32px; padding: 0 28px 0 8px; border-color: #c3cbd0; font-size: 13px; }
-  .era-select { padding-left: 12px; border-left: 1px solid #cfd5d9; }
-  .era-select select { width: auto; min-width: 132px; height: 32px; padding: 0 28px 0 8px; border-color: #c3cbd0; font-size: 13px; }
+  .product { font-size: 14px; font-weight: 800; }
+  .project-select { padding-left: 12px; border-left: 1px solid rgb(255 255 255 / 28%); }
+  .project-select select { width: auto; max-width: 190px; min-width: 110px; height: 32px; padding: 0 28px 0 8px; border-color: #d4c8ae; background: #fff9ed; font-size: 13px; }
+  .era-select { padding-left: 12px; border-left: 1px solid rgb(255 255 255 / 28%); }
+  .era-select select { width: auto; min-width: 132px; height: 32px; padding: 0 28px 0 8px; border-color: #d4c8ae; background: #fff9ed; font-size: 13px; }
   nav { align-self: stretch; display: flex; gap: 6px; }
-  nav button { padding: 0 16px; border-bottom: 3px solid transparent; background: transparent; color: #5c676d; font-size: 14px; }
-  nav button.active { border-bottom-color: #24353f; color: #1f2529; font-weight: 700; }
+  nav button { padding: 0 16px; border-bottom: 3px solid transparent; background: transparent; color: #dce9e4; font-size: 14px; }
+  nav button.active { border-bottom-color: #d9a441; color: #fff; font-weight: 800; }
   .content { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 42px 0; }
   .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
   h1 { margin: 0; font-size: 30px; line-height: 1.2; }
   p { margin: 7px 0 0; color: #657078; font-size: 14px; }
   button { border: 0; cursor: pointer; }
-  .add-button { min-height: 40px; padding: 0 16px; border: 1px solid #24353f; background: #24353f; color: #fff; font-weight: 650; }
-  .add-button:hover { background: #17252d; }
+  .add-button { min-height: 42px; padding: 0 17px; border: 1px solid #a83b28; border-radius: 6px; background: #c94c32; color: #fff; font-weight: 750; }
+  .add-button:hover { background: #a93c28; }
   .add-button:disabled { border-color: #aeb7bc; background: #aeb7bc; cursor: not-allowed; }
-  .building-list { overflow-x: auto; border: 1px solid #cbd2d6; background: #fff; }
   .overview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-  .summary { min-height: 220px; padding: 20px; border: 1px solid #cbd2d6; background: #fff; }
+  .priority { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 18px; padding: 20px 22px; border-left: 5px solid #3f7d55; border-radius: 8px; background: #eff8f1; box-shadow: 0 4px 14px rgb(65 53 28 / 8%); }
+  .priority.warning { border-left-color: #d4942a; background: #fff4dd; }
+  .priority.error { border-left-color: #b83a32; background: #fff0eb; }
+  .priority span { color: #6b665d; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+  .priority h2 { margin: 4px 0 0; font-size: 21px; }
+  .priority p { line-height: 1.45; }
+  .priority button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; border-radius: 5px; background: #234f45; color: #fff; font-weight: 700; }
+  .summary { min-height: 220px; padding: 20px; border: 1px solid #d1c3a6; border-radius: 10px; background: #fff9ed; box-shadow: 0 4px 14px rgb(65 53 28 / 7%); }
   .summary h2 { margin: 0 0 16px; font-size: 17px; }
   .summary p { line-height: 1.45; }
   .summary .model-unit { margin: -8px 0 8px; font-size: 12px; }
@@ -276,35 +300,16 @@
   .notices strong { font-size: 14px; }
   .notices ul { margin: 8px 0 0; padding-left: 18px; color: #4f5b62; font-size: 13px; line-height: 1.45; }
   .notices li + li { margin-top: 4px; }
-  table { width: 100%; min-width: 1000px; border-collapse: collapse; }
+  table { width: 100%; border-collapse: collapse; }
   th { padding: 11px 14px; border-bottom: 1px solid #cbd2d6; background: #eef1f2; color: #536068; font-size: 12px; font-weight: 700; letter-spacing: .02em; text-align: left; text-transform: uppercase; }
   td { padding: 10px 14px; border-bottom: 1px solid #e1e5e7; }
   tbody tr:last-child td { border-bottom: 0; }
-  tbody tr:hover { background: #fafbfb; }
-  tbody tr.disabled-row { opacity: .65; background: #f5f6f6; }
-  input, select { width: 100%; height: 36px; padding: 0 10px; border: 1px solid #b9c2c7; border-radius: 0; background: #fff; color: #1f2529; }
-  input:focus, select:focus { border-color: #506d7c; outline: 2px solid rgba(80, 109, 124, .16); outline-offset: 0; }
-  td:nth-child(1) { width: 30%; }
-  td:nth-child(2) { width: 100px; }
-  td:nth-child(3) { width: 140px; }
-  td:nth-child(4) { width: 200px; }
-  td:nth-child(5) { width: 300px; }
-  .percent-input { display: flex; align-items: center; border: 1px solid #b9c2c7; background: #fff; }
-  .percent-input:focus-within { border-color: #506d7c; outline: 2px solid rgba(80, 109, 124, .16); }
-  .percent-input input { border: 0; outline: 0; }
-  .percent-input span:last-child { padding-right: 10px; color: #677178; }
-  .actions { width: 100px; text-align: right; }
-  .performance-cell { color: #26343b; font-size: 13px; white-space: nowrap; }
-  .delete-button { padding: 6px 0; background: transparent; color: #8a3131; font-size: 13px; }
-  .delete-button:hover { text-decoration: underline; }
-  .details-button { display: block; margin: 0 0 3px auto; padding: 4px 0; background: transparent; color: #294f62; font-size: 13px; font-weight: 700; }
-  .details-button:hover { text-decoration: underline; }
-  .entry-status { display: inline-block; margin-bottom: 5px; padding: 2px 6px; background: #e8eef0; color: #42535c; font-size: 11px; font-weight: 750; text-transform: uppercase; }
-  .entry-status.planned { background: #fff0d4; color: #7a5420; }
-  .entry-status.disabled { background: #ececec; color: #666; }
-  .details-row > td { padding: 0; border-bottom: 2px solid #aeb9be; }
-  .details-row:hover { background: transparent; }
-  .empty { padding: 32px; color: #69737a; text-align: center; }
+  select { width: 100%; height: 36px; padding: 0 10px; border: 1px solid #b9c2c7; background: #fff; color: #1f2529; }
+  select:focus { border-color: #506d7c; outline: 2px solid rgba(80, 109, 124, .16); outline-offset: 0; }
+  .building-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .empty { grid-column: 1 / -1; padding: 38px 24px; border: 1px dashed #b9a98a; border-radius: 10px; background: rgb(255 249 237 / 70%); color: #6b665d; text-align: center; }
+  .empty h2 { margin: 0; color: #2b2925; font-size: 20px; }
+  .empty button { min-height: 40px; margin-top: 18px; padding: 0 15px; border-radius: 5px; background: #234f45; color: #fff; font-weight: 700; }
   .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
   @media (max-width: 680px) {
@@ -319,5 +324,8 @@
     .page-header { align-items: stretch; flex-direction: column; }
     .add-button { width: 100%; }
     .overview-grid { grid-template-columns: 1fr; }
+    .priority { align-items: stretch; flex-direction: column; }
+    .priority button { width: 100%; }
+    .building-grid { grid-template-columns: 1fr; }
   }
 </style>

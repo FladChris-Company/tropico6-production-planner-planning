@@ -4,9 +4,11 @@
 
   export let entry: Entry;
   export let building: Building;
+  export let availableBuildings: Building[];
   export let scenario: Scenario;
   export let goods: Record<string, { name: string }>;
   export let onChanged: () => void;
+  export let onBuildingChanged: () => void;
 
   $: mode = building.modes.find((item) => item.id === entry.modeId) ?? building.modes[0];
   $: inputGoods = Object.entries(mode?.inputs ?? {});
@@ -43,6 +45,18 @@
 
 <section class="details" aria-label={`Details für ${building.name}`}>
   <div class="detail-grid">
+    <label>
+      <span>Gebäude</span>
+      <select aria-label={`Gebäudetyp ${building.name}`} bind:value={entry.buildingId} onchange={onBuildingChanged}>
+        {#each availableBuildings as option}<option value={option.id}>{option.name}</option>{/each}
+      </select>
+    </label>
+    <label>
+      <span>Arbeitsmodus</span>
+      <select aria-label={`Arbeitsmodus ${building.name}`} bind:value={entry.modeId} onchange={onChanged}>
+        {#each building.modes as option}<option value={option.id}>{option.name}</option>{/each}
+      </select>
+    </label>
     <label>
       <span>Status</span>
       <select aria-label={`Status ${building.name}`} bind:value={entry.status} onchange={onChanged}>
