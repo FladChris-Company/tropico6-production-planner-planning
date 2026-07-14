@@ -2,7 +2,18 @@
 
 ## Aktueller Umsetzungsstand
 
-Die produktive Minimalversion speichert Änderungen automatisch in `localStorage` des verwendeten Browsers. Die Daten bleiben beim normalen Schließen erhalten, sind aber ohne Sicherung nicht gegen gelöschte Websitedaten, Inkognito-Sitzungen oder einen Gerätewechsel geschützt. JSON-Import und -Export sowie die spätere Umstellung auf IndexedDB bleiben verpflichtende Ausbauschritte.
+Die produktive Minimalversion speichert Änderungen automatisch in `localStorage` des verwendeten Browsers. Die Daten bleiben beim normalen Schließen erhalten. Zusätzlich kann die aktive Insel als versionierte JSON-Datei gesichert und wieder importiert werden. Bekannte ältere lokale Daten werden migriert; nicht lesbare Daten bleiben für eine manuelle Rettung unangetastet. Die spätere Umstellung auf IndexedDB bleibt ein Ausbauschritt.
+
+## Lokale Migration und Wiederherstellung
+
+Unterstützt werden:
+
+- das historische Beta-Schema 1 aus `tropico6-production-planner-beta1`
+- Schema 2 mit inzwischen hinzugekommenen Standardfeldern
+
+Die Beta-Migration erhält Projekte, Szenarien, Cluster, Gebäudeanzahl, Status, Arbeitsmodus, Effizienz, Besetzung, Entfernung und DLC-Auswahl. Historische Gebäude-, Modus- und DLC-IDs werden auf die aktuellen stabilen IDs abgebildet. Der alte Speichereintrag bleibt als zusätzliche Rückfallebene erhalten.
+
+Kann JSON nicht gelesen werden, ist die Struktur unvollständig oder stammt sie aus einem unbekannten neueren Schema, wird keine Beispielinsel geladen und nichts automatisch überschrieben. Stattdessen zeigt die Anwendung eine Wiederherstellungsansicht. Dort kann der Spieler zuerst die unveränderten Rohdaten herunterladen. Das Ersetzen durch eine neue Beispielinsel erfordert anschließend eine gesonderte Bestätigung.
 
 ## Primäre Zielspeicherung
 
@@ -45,15 +56,16 @@ Die Oberfläche soll anzeigen:
 
 ## Export
 
-Ein Projekt kann in ein eigenes JSON-basiertes Dateiformat exportiert werden.
+Die aktive Insel kann in ein eigenes JSON-basiertes Dateiformat exportiert werden. Der Dateidownload findet vollständig im Browser statt.
 
 Vorgesehene Metadaten:
 
 - Formatkennung
 - Schemaversion
-- Spieldatenversion
 - Exportzeitpunkt
 - Projektinhalt
+
+Eine eigenständige Spieldatenversion existiert im aktuellen Datenmodell noch nicht und wird deshalb nicht vorgetäuscht. Sie wird ergänzt, sobald die manuellen Stammdaten selbst versioniert werden.
 
 ## Import
 
@@ -66,6 +78,8 @@ Vor einem Import werden geprüft:
 - benötigte DLCs
 - Konflikt mit bestehenden Projekt-IDs
 - notwendige Migrationen
+
+Der aktuelle Import unterstützt genau die Export-Schemaversion 1 und die Datenbankschemaversion 2. Er prüft die Projektstruktur, Szenario- und Clusterreferenzen, Zahlenwerte und alle Gebäude-IDs. Benötigte DLC-Kennungen werden aus den bekannten Gebäudedaten ergänzt. Eine importierte Insel wird zusätzlich angelegt und direkt ausgewählt; bestehende Inseln werden nicht überschrieben. Doppelte IDs und Namen werden eindeutig aufgelöst. Bei einem Fehler bleibt der lokale Stand unverändert.
 
 ## Persistenter Browser-Speicher
 

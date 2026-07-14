@@ -15,8 +15,9 @@ Work in Progress
 - Version: `v1.0.0`
 - Fokus: ausschließlich Kolonialzeit
 - Grundspiel und koloniale DLC-Produktionsgebäude
-- lokale Speicherung im Browser
-- Import und Export als geplanter Sicherungsschritt
+- zielorientierte Rückwärtsplanung für berechenbare Kolonialketten
+- lokale Speicherung im Browser mit Migration älterer Inselstände und sichtbarer Datenrettung bei Fehlern
+- Inseln als versionierte JSON-Sicherung exportieren und sicher wieder importieren
 - automatische Prüfung vor jeder Veröffentlichung
 
 ## Produktarchitektur
@@ -42,29 +43,44 @@ Der Planer soll nicht nur Zahlen zeigen, sondern typische Fragen während einer 
 
 - mehrere Inselprojekte
 - frei definierbare Cluster
-- schneller Gebäudeeintrag mit Anzahl und Cluster
+- durchsuchbare Gebäudeauswahl, die erst nach einer bewussten Auswahl einen Eintrag anlegt
+- kompakte Gebäudekarten mit Ergebnis und Engpass vor den Eingaben
+- direkte Planungsaktionen für fehlende Rohstoffgebäude
 - Vorlagen für Rum, Bretter und Leder
 - Gebäude hinzufügen, duplizieren, deaktivieren und entfernen
-- Effizienz, Personalbesetzung und Arbeitsmodi
-- optionale Entfernung als verständliche Kategorie
+- Grundeffizienz, Personalbesetzung und Arbeitsmodi
+- gebaut, geplant und deaktiviert direkt am Gebäude
+- aufklappbare Expertendetails für Gebäudetyp, Arbeitsmodus, Cluster, Entfernung, Notizen und eigene Produktionsraten
+- externe Warenversorgung direkt an den betroffenen Fabrikeingängen
+- belegte koloniale Verbesserungen aus der manuellen Wissensquelle
 - unveränderlicher Ist-Stand
 - unabhängige Ausbauprognosen
 - Vergleich zwischen Ist-Stand und Prognose
 - Prognosen übernehmen, kopieren und löschen
 - Produktionsketten mit Versorgungsgrad
 - konkrete Hinweise zu fehlenden Rohstoffgebäuden
+- Produktionsziel nach Endgebäude, Arbeitsmodus und gewünschter Anzahl
+- Vergleich der Empfehlung mit bereits gebauten und geplanten Gebäuden
+- zusätzlicher Arbeiterbedarf des empfohlenen Ausbaus
 - Produktion, Verbrauch, Restmenge und Fehlmenge je Ware
 - externe Warenversorgung und Mindestreserven
 - exportierbare Überschüsse
 - Arbeitsplätze und offene Stellen
 - Transportbüros und Transporteinschätzung
 - DLC-Filter für koloniale Produktionsinhalte
-- JSON-Import und -Export (geplant)
+- JSON-Import und -Export mit Format-, Schema- und Gebäudedatenprüfung
+- Wiederherstellungsansicht statt stiller Beispielinsel bei beschädigten oder unbekannten lokalen Daten
 - mobile Darstellung und Offline-Grundlage
 
 ## Speicherung
 
-Inseln und Prognosen werden aktuell automatisch im lokalen Speicher des jeweiligen Browsers gespeichert. Sie sind nicht öffentlich sichtbar und werden nicht an einen Server übertragen. Eine Sicherung per JSON-Export ist geplant, aber in der Minimaloberfläche noch nicht verfügbar.
+Inseln und Prognosen werden automatisch im lokalen Speicher des jeweiligen Browsers gespeichert. Bekannte ältere Speicherstände werden verlustfrei auf das aktuelle Schema migriert. Beschädigte oder unbekannte Daten werden nicht automatisch ersetzt: Der Planer bietet zuerst eine Sicherung der Rohdaten und verlangt eine ausdrückliche Bestätigung, bevor eine neue Beispielinsel angelegt wird. Über „Sicherung“ kann die aktive Insel außerdem als JSON-Datei gespeichert und später wieder importiert werden. Ein Import legt eine eigene Insel an und überschreibt den vorhandenen Stand nicht. Die Daten werden nur auf dem Gerät verarbeitet und nicht an einen Server übertragen.
+
+## Spieldaten für den Kolonialzeit-MVP
+
+Die CSV-Dateien unter `manual/` sind die gepflegte Wissensquelle für Gebäude, Waren, Produktionsrezepte, Arbeitsmodi, Verbesserungen und Quellen. Ein validierter Generator erzeugt daraus die von der Anwendung verwendeten Kolonialdaten in `src/lib/domain/generated/colonial-data.json`.
+
+Gemessene und ausdrücklich gekennzeichnete geschätzte Raten je Arbeiter-Arbeitstag werden in Warenbestands-Einheiten umgerechnet. Ein Ratenpunkt entspricht dabei 1.000 Warenbestands-Einheiten. Schätzungen bleiben direkt am Ergebnis erkennbar und erklären ihre Annahmen im Tooltip. Bei fehlender Zeitrate zeigt der Planer trotzdem den belegten Produktionsweg und gegebenenfalls eine dokumentierte Testcharge; eine korrekte Gebäudeanzahl wird daraus nicht vorgetäuscht.
 
 ## Lokale Entwicklung
 
@@ -78,9 +94,16 @@ npm run dev
 Qualitätsprüfung und Produktions-Build:
 
 ```text
+npm run data:check
 npm run check
 npm test
 npm run build
+```
+
+Nach einer Änderung der verwendeten CSV-Wissensquelle:
+
+```text
+npm run data:generate
 ```
 
 ## Dokumentation

@@ -50,7 +50,7 @@ Priorisierte Hauptketten:
 - Produktionsziel als Prognose speichern
 - Empfehlungen ganz oder teilweise übernehmen
 - Vergleich zwischen Ist-Stand und Planung
-- Export und Import
+- Export und Import (für einzelne Inseln umgesetzt)
 
 ## Phase 4 – Spielerorientierte Produktionsoberfläche
 

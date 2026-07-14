@@ -6,6 +6,8 @@ on:
     paths:
       - 'src/**'
       - 'static/**'
+      - 'manual/**'
+      - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
       - 'svelte.config.js'
@@ -37,6 +39,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Validate generated colonial data
+        run: npm run data:check
 
       - name: Check types and components
         run: npm run check

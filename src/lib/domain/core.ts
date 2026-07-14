@@ -20,21 +20,31 @@ function rates(entry:Prepared['entry'], mode:Building['modes'][number]) {
   return {inputs:normalize(mode.inputs,entry.rateOverrides?.inputs ?? {}),outputs:normalize(mode.outputs,entry.rateOverrides?.outputs ?? {})};
 }
 
+function upgradeEffects(entry: Entry, building: Building) {
+  const selected = new Set(entry.upgradeIds ?? []);
+  const upgrades = (building.upgrades ?? []).filter((upgrade) => selected.has(upgrade.id));
+  return {
+    workers: building.workers + upgrades.filter((upgrade) => upgrade.effectType === 'workers').reduce((sum, upgrade) => sum + upgrade.effectValue, 0),
+    efficiency: Number(entry.efficiency) + upgrades.filter((upgrade) => upgrade.effectType === 'efficiency').reduce((sum, upgrade) => sum + upgrade.effectValue, 0)
+  };
+}
+
 export function calculateEntryPerformance({entry,building,era='colonial',settings}:{entry:Entry;building:Building;era?:Era;settings:Settings}) {
   const mode=building.modes.find(item=>item.id===entry.modeId)??building.modes[0];
   const normalized=rates(entry,mode);
-  const calculable=[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(value=>value!=null&&Number.isFinite(Number(value)));
+  const calculable=Object.keys(normalized.outputs).length>0&&[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(value=>value!=null&&Number.isFinite(Number(value)));
   const count=Math.max(0,Number(entry.count)||0);
-  const efficiency=clamp(entry.efficiency,0,500)/100;
-  const factor=count*building.workers*efficiency;
+  const effects=upgradeEffects(entry,building);
+  const efficiency=clamp(effects.efficiency,0,500)/100;
+  const factor=count*effects.workers*efficiency;
   const scale=(source:Record<string,number|null>)=>Object.fromEntries(Object.entries(source).map(([id,value])=>[id,Number(value)*factor])) as Rates;
   const inputs=calculable?scale(normalized.inputs):{};
   const outputs=calculable?scale(normalized.outputs):{};
   const staffing=clamp(entry.staffing,0,100)/100;
   const transportCapacity=building.kind==='teamster'
-    ? count*building.workers*staffing*LOAD_PER_TRIP_BY_ERA[era]*efficiency*(TEAMSTER_MODE_FACTORS[mode.id]??1)*Math.max(0,settings.transportTripsPerWorker)
+    ? count*effects.workers*staffing*LOAD_PER_TRIP_BY_ERA[era]*efficiency*(TEAMSTER_MODE_FACTORS[mode.id]??1)*Math.max(0,settings.transportTripsPerWorker)
     : 0;
-  return {mode,calculable,inputs,outputs,transportCapacity,loadPerTrip:LOAD_PER_TRIP_BY_ERA[era],modeFactor:TEAMSTER_MODE_FACTORS[mode.id]??1};
+  return {mode,calculable,inputs,outputs,transportCapacity,loadPerTrip:LOAD_PER_TRIP_BY_ERA[era],modeFactor:TEAMSTER_MODE_FACTORS[mode.id]??1,effectiveWorkers:effects.workers,effectiveEfficiency:efficiency*100};
 }
 
 function bestSource(buildings:Building[], goodId:string) {
@@ -67,21 +77,22 @@ export function calculateScenario({scenario,buildings,goods,settings,era='coloni
   for(const entry of scenario.entries.filter(e=>e.status!=='disabled'&&Number(e.count)>0)) {
     const building=buildingMap.get(entry.buildingId); if(!building) continue;
     const mode=building.modes.find(m=>m.id===entry.modeId)??building.modes[0];
-    const count=Math.max(0,Number(entry.count)||0), efficiency=clamp(entry.efficiency,0,500)/100, staffing=clamp(entry.staffing,0,100)/100;
+    const effects=upgradeEffects(entry,building);
+    const count=Math.max(0,Number(entry.count)||0), efficiency=clamp(effects.efficiency,0,500)/100, staffing=clamp(entry.staffing,0,100)/100;
     const normalized=rates(entry,mode) as {inputs:Rates;outputs:Rates};
-    const calculable=[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(v=>v!=null&&Number.isFinite(Number(v)));
+    const calculable=Object.keys(normalized.outputs).length>0&&[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(v=>v!=null&&Number.isFinite(Number(v)));
     const performance=calculateEntryPerformance({entry,building,era,settings});
     totalBuildings+=count; if(entry.status==='planned') plannedBuildings+=count;
-    totalJobs+=count*building.workers; filledJobs+=count*building.workers*staffing;
-    educationJobs[building.education]=(educationJobs[building.education]??0)+count*building.workers;
-    educationFilled[building.education]=(educationFilled[building.education]??0)+count*building.workers*staffing;
+    totalJobs+=count*effects.workers; filledJobs+=count*effects.workers*staffing;
+    educationJobs[building.education]=(educationJobs[building.education]??0)+count*effects.workers;
+    educationFilled[building.education]=(educationFilled[building.education]??0)+count*effects.workers*staffing;
     if(building.kind==='teamster') {
       teamsterOffices+=count;
       transportCapacity+=performance.transportCapacity;
     }
     if(building.kind==='production'&&performance.calculable) transportDemand+=Object.values(performance.outputs).reduce((sum,value)=>sum+value,0);
     if(!calculable&&building.kind==='production') unknownEntries+=count;
-    prepared.push({entry,building,mode,count,theoreticalFactor:count*building.workers*efficiency,expectedFactor:count*building.workers*efficiency*staffing*settings.worktimeFactor*settings.logisticsFactor,rates:normalized,calculable});
+    prepared.push({entry,building,mode,count,theoreticalFactor:count*effects.workers*efficiency,expectedFactor:count*effects.workers*efficiency*staffing*settings.worktimeFactor*settings.logisticsFactor,rates:normalized,calculable});
   }
 
   const entryResults: {entryId:string;buildingId:string;utilization:number;inputs:Rates;outputs:Rates;missing:Rates;calculable:boolean;theoreticalOutputs:Rates}[]=[];
@@ -138,6 +149,105 @@ export function calculateScenario({scenario,buildings,goods,settings,era='coloni
   return {totalBuildings,plannedBuildings,totalJobs,filledJobs,openJobs,educationJobs,educationFilled,teamsterOffices,transportDemand,transportCapacity,transportDifference,transportUtilization,requiredTeamsterOffices,teamsterOfficeDifference,unknownEntries,balances,chainSummaries,diagnostics,entryResults,suppliedChains:chainSummaries.filter(x=>x.utilization>=.999).length,totalChains:chainSummaries.length,topExports:balances.filter(x=>x.exportable>.01).sort((a,b)=>b.exportable-a.exportable).slice(0,5)};
 }
 
+export function supplyActionForEntry(result: ReturnType<typeof calculateScenario>, entryId: string) {
+  const chain = result.chainSummaries.find((item) => item.entryId === entryId);
+  const shortage = chain?.inputs
+    .filter((input) => input.missing > .01 && input.source && input.suggestedSourceCount && input.suggestedSourceCount > 0)
+    .sort((left, right) => right.missing - left.missing)[0];
+  if (!shortage?.source || !shortage.suggestedSourceCount) return null;
+  return {
+    buildingId: shortage.source.buildingId,
+    buildingName: shortage.source.name,
+    goodId: shortage.goodId,
+    count: shortage.suggestedSourceCount
+  };
+}
+
+export type ProductionChainStatus = {
+  entryId: string;
+  buildingName: string;
+  goodId: string;
+  goodName: string;
+  needed: number;
+  delivered: number;
+  missing: number;
+  status: 'covered' | 'shortage';
+  action: ReturnType<typeof supplyActionForEntry>;
+};
+
+export function productionChainStatus(result: ReturnType<typeof calculateScenario>, goods: Record<string, { name: string }>): ProductionChainStatus[] {
+  return result.chainSummaries.flatMap((chain) => {
+    const action = supplyActionForEntry(result, chain.entryId);
+    return chain.inputs.map((input) => ({
+      entryId: chain.entryId,
+      buildingName: chain.buildingName,
+      goodId: input.goodId,
+      goodName: goods[input.goodId]?.name ?? input.goodId,
+      needed: input.demand,
+      delivered: input.actual,
+      missing: input.missing,
+      status: input.missing > .01 ? 'shortage' as const : 'covered' as const,
+      action: action?.goodId === input.goodId ? action : null
+    }));
+  });
+}
+
+export type PlayerAction =
+  | { kind: 'supply'; title: string; detail: string; entryId: string; buildingId: string; count: number }
+  | { kind: 'teamster'; title: string; detail: string; buildingId: 'teamster-office'; count: number }
+  | { kind: 'staffing'; title: string; detail: string }
+  | { kind: 'data'; title: string; detail: string }
+  | { kind: 'stable'; title: string; detail: string };
+
+export function nextPlayerActions(result: ReturnType<typeof calculateScenario>): PlayerAction[] {
+  const actions: PlayerAction[] = [];
+  for (const chain of result.chainSummaries.filter((item) => item.utilization < .999)) {
+    const supply = supplyActionForEntry(result, chain.entryId);
+    if (!supply) continue;
+    actions.push({
+      kind: 'supply',
+      title: `${supply.count} × ${supply.buildingName} einplanen`,
+      detail: `${chain.buildingName} erreicht damit rechnerisch wieder die volle Rohstoffversorgung.`,
+      entryId: chain.entryId,
+      buildingId: supply.buildingId,
+      count: supply.count
+    });
+  }
+  if (result.teamsterOfficeDifference > 0) actions.push({
+    kind: 'teamster',
+    title: `${result.teamsterOfficeDifference} × Fuhrunternehmen einplanen`,
+    detail: 'Die theoretische Transportkapazität liegt unter dem Warenaufkommen.',
+    buildingId: 'teamster-office',
+    count: result.teamsterOfficeDifference
+  });
+  if (result.openJobs > .01) actions.push({
+    kind: 'staffing',
+    title: `${fmt(result.openJobs, 0)} offene Arbeitsplätze besetzen`,
+    detail: 'Unbesetzte Stellen senken die erwartete Produktion deiner Insel.'
+  });
+  if (result.unknownEntries > 0) actions.push({
+    kind: 'data',
+    title: `${fmt(result.unknownEntries, 0)} unberechenbare Gebäude prüfen`,
+    detail: 'Für diese Gebäude fehlen noch belastbare Produktionswerte.'
+  });
+  if (!actions.length) actions.push({
+    kind: 'stable',
+    title: 'Keine dringende Aktion',
+    detail: 'Unter den gewählten Annahmen ist deine erfasste Produktion stabil.'
+  });
+  return actions.slice(0, 3);
+}
+
+export function describeIslandChange(before: ReturnType<typeof calculateScenario>, after: ReturnType<typeof calculateScenario>, label: string) {
+  const supplied = Math.max(0, after.suppliedChains - before.suppliedChains);
+  if (supplied > 0) return `${label}: ${fmt(supplied, 0)} ${supplied === 1 ? 'Produktionsengpass' : 'Produktionsengpässe'} behoben.`;
+  const transportImprovement = Math.max(0, Math.max(0, -before.transportDifference) - Math.max(0, -after.transportDifference));
+  if (transportImprovement > .01) return `${label}: Transportdefizit um ${fmt(transportImprovement)} reduziert.`;
+  const jobsFilled = Math.max(0, before.openJobs - after.openJobs);
+  if (jobsFilled > .01) return `${label}: ${fmt(jobsFilled, 0)} offene ${jobsFilled === 1 ? 'Stelle' : 'Stellen'} zusätzlich besetzt.`;
+  return `${label}. Die Inselberechnung ist aktualisiert.`;
+}
+
 export function goalRequirements(buildingId:string,count:number,modeId:string,buildings:Building[],settings:Settings,goods:Record<string,{name:string}>={}) {
   const rows:{buildingId:string;name:string;icon:string;exact:number;recommended:number;reason:string;level:number;status:string}[]=[];
   const visit=(id:string,amount:number,selectedMode:string|undefined,level:number,reason:string)=>{
@@ -155,6 +265,25 @@ export function goalRequirements(buildingId:string,count:number,modeId:string,bu
   };
   visit(buildingId,Math.max(0,count),modeId,0,'Produktionsziel');
   return rows.reverse();
+}
+
+export function buildGoalPlan({buildingId,count,modeId,buildings,settings,entries,goods={}}:{buildingId:string;count:number;modeId:string;buildings:Building[];settings:Settings;entries:Entry[];goods?:Record<string,{name:string}>}) {
+  const target=buildings.find(building=>building.id===buildingId);
+  const targetMode=target?.modes.find(mode=>mode.id===modeId)??target?.modes[0];
+  const calculable=Boolean(targetMode&&Object.keys(targetMode.outputs).length&&[...Object.values(targetMode.inputs),...Object.values(targetMode.outputs)].every(rate=>rate!=null&&Number.isFinite(Number(rate))));
+  const totals=new Map<string,{existing:number;planned:number}>();
+  for(const entry of entries.filter(entry=>entry.status!=='disabled')) {
+    const value=totals.get(entry.buildingId)??{existing:0,planned:0};
+    value[entry.status==='planned'?'planned':'existing']+=Math.max(0,Number(entry.count)||0);
+    totals.set(entry.buildingId,value);
+  }
+  const rows=goalRequirements(buildingId,count,modeId,buildings,settings,goods).map(row=>{
+    const inventory=totals.get(row.buildingId)??{existing:0,planned:0};
+    const missing=Math.max(0,row.recommended-inventory.existing-inventory.planned);
+    const workers=buildings.find(building=>building.id===row.buildingId)?.workers??0;
+    return {...row,...inventory,missing,additionalWorkers:missing*workers};
+  });
+  return {calculable,rows,additionalWorkers:rows.reduce((sum,row)=>sum+row.additionalWorkers,0)};
 }
 
 export function compareResults(current:ReturnType<typeof calculateScenario>,forecast:ReturnType<typeof calculateScenario>) {return {totalBuildings:forecast.totalBuildings-current.totalBuildings,totalJobs:forecast.totalJobs-current.totalJobs,openJobs:forecast.openJobs-current.openJobs,transportDemand:forecast.transportDemand-current.transportDemand,suppliedChains:forecast.suppliedChains-current.suppliedChains};}

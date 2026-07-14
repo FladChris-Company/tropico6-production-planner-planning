@@ -18,7 +18,7 @@ Die Hauptnavigation bleibt dauerhaft erreichbar:
 - Meine Planung
 - Einstellungen
 
-Datensicherung, Export und neue Insel werden als globale Aktionen angeboten, aber nicht mit den fachlichen Hauptmodulen vermischt.
+Datensicherung und Import liegen im klar benannten Bereich „Sicherung“ und werden nicht mit den fachlichen Produktionsmodulen vermischt. Die aktive Insel bleibt im Kopfbereich jederzeit auswählbar.
 
 ## Desktoplayout
 

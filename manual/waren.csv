@@ -12,6 +12,10 @@ cloth;Stoff;Cloth;Zwischenprodukt;;name_from_production_dataset;https://steamcom
 coal;Kohle;Coal;Rohstoff;;name_from_production_dataset;https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953
 cocoa;Kakao;Cocoa;Rohstoff;;name_from_production_dataset;https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953
 coconut;Kokosnüsse;Coconut;Rohstoff;;name_from_production_dataset;https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953
+books;Bücher;Books;Endprodukt;7900;verified_community_guide;https://steamcommunity.com/sharedfiles/filedetails/?id=1699470418
+fireworks;Feuerwerk;Fireworks;Endprodukt;;verified_relationship;https://tropico.fandom.com/wiki/Fireworks_Factory
+paper;Papier;Paper;Zwischenprodukt;2300;verified_community_guide;https://steamcommunity.com/sharedfiles/filedetails/?id=1699470418
+pearls;Perlen;Pearls;Rohstoff;;verified_relationship;https://tropico.fandom.com/wiki/Goods_(Tropico_6)
 coffee;Kaffee;Coffee;Rohstoff;;name_from_production_dataset;https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953
 corn;Mais;Corn;Rohstoff;;name_from_production_dataset;https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953
 cotton;Baumwolle;Cotton;Rohstoff;;name_from_production_dataset;https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953

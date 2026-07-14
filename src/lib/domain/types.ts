@@ -1,4 +1,4 @@
-export type DataStatus = 'verified' | 'estimated' | 'unknown' | 'model';
+export type DataStatus = 'verified' | 'measured' | 'estimated' | 'unknown' | 'model';
 export type EntryStatus = 'existing' | 'planned' | 'disabled';
 export type Severity = 'success' | 'warning' | 'error';
 export type Era = 'colonial' | 'world-wars' | 'cold-war' | 'modern';
@@ -6,8 +6,24 @@ export type Era = 'colonial' | 'world-wars' | 'cold-war' | 'modern';
 export interface Mode {
   id: string;
   name: string;
+  availableFrom?: Era;
   inputs: Record<string, number | null>;
   outputs: Record<string, number | null>;
+  referenceBatch?: {
+    inputs: Record<string, number>;
+    outputs: Record<string, number>;
+  };
+}
+
+export interface Upgrade {
+  id: string;
+  name: string;
+  effectType: 'efficiency' | 'workers' | 'information';
+  effectValue: number;
+  effectUnit: 'percent' | 'workers' | string;
+  description: string;
+  dataStatus: DataStatus;
+  source: string;
 }
 
 export interface Building {
@@ -21,8 +37,10 @@ export interface Building {
   kind: 'production' | 'teamster' | 'infrastructure';
   stage: number;
   dataStatus: DataStatus;
+  dataNote?: string;
   source: string;
   availableFrom?: Era;
+  upgrades?: Upgrade[];
   modes: Mode[];
 }
 
@@ -38,6 +56,7 @@ export interface Entry {
   status: EntryStatus;
   note: string;
   rateOverrides: { inputs: Record<string, number | ''>; outputs: Record<string, number | ''> };
+  upgradeIds?: string[];
 }
 
 export interface Scenario {
