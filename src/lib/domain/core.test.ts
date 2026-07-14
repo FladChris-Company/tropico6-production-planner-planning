@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BUILDINGS, DEFAULT_SETTINGS, GOODS, buildingAvailableInEra } from './data';
-import { buildGoalPlan, calculateEntryPerformance, calculateScenario, goalRequirements, nextPlayerActions, supplyActionForEntry } from './core';
+import { buildGoalPlan, calculateEntryPerformance, calculateScenario, describeIslandChange, goalRequirements, nextPlayerActions, supplyActionForEntry } from './core';
 import type { Entry, Scenario } from './types';
 
 const entry=(id:string,buildingId:string,count:number,modeId='standard',status:Entry['status']='existing'):Entry=>({id,clusterId:'main',buildingId,modeId,count,efficiency:100,staffing:100,distance:'',status,note:'',rateOverrides:{inputs:{},outputs:{}}});
@@ -46,6 +46,13 @@ describe('Kolonialzeit-Berechnung',()=>{
       expect.objectContaining({kind:'teamster',title:'7 × Fuhrunternehmen einplanen'}),
       expect.objectContaining({kind:'staffing',title:'4 offene Arbeitsplätze besetzen'})
     ]);
+  });
+
+  it('beschreibt die Verbesserung nach einer Inseländerung',()=>{
+    const before=calculate([entry('sugar','plantation-sugar',1),entry('rum','rum-distillery',1,'dunder')]);
+    const after=calculate([entry('sugar','plantation-sugar',2),entry('rum','rum-distillery',1,'dunder')]);
+
+    expect(describeIslandChange(before,after,'Zuckerplantage eingeplant')).toBe('Zuckerplantage eingeplant: 1 Produktionsengpass behoben.');
   });
 
   it('berücksichtigt Besetzung und Erwartungsprofil',()=>{

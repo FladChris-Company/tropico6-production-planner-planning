@@ -209,6 +209,16 @@ export function nextPlayerActions(result: ReturnType<typeof calculateScenario>):
   return actions.slice(0, 3);
 }
 
+export function describeIslandChange(before: ReturnType<typeof calculateScenario>, after: ReturnType<typeof calculateScenario>, label: string) {
+  const supplied = Math.max(0, after.suppliedChains - before.suppliedChains);
+  if (supplied > 0) return `${label}: ${fmt(supplied, 0)} ${supplied === 1 ? 'Produktionsengpass' : 'Produktionsengpässe'} behoben.`;
+  const transportImprovement = Math.max(0, Math.max(0, -before.transportDifference) - Math.max(0, -after.transportDifference));
+  if (transportImprovement > .01) return `${label}: Transportdefizit um ${fmt(transportImprovement)} reduziert.`;
+  const jobsFilled = Math.max(0, before.openJobs - after.openJobs);
+  if (jobsFilled > .01) return `${label}: ${fmt(jobsFilled, 0)} offene ${jobsFilled === 1 ? 'Stelle' : 'Stellen'} zusätzlich besetzt.`;
+  return `${label}. Die Inselberechnung ist aktualisiert.`;
+}
+
 export function goalRequirements(buildingId:string,count:number,modeId:string,buildings:Building[],settings:Settings,goods:Record<string,{name:string}>={}) {
   const rows:{buildingId:string;name:string;icon:string;exact:number;recommended:number;reason:string;level:number;status:string}[]=[];
   const visit=(id:string,amount:number,selectedMode:string|undefined,level:number,reason:string)=>{

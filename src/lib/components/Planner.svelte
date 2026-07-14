@@ -8,7 +8,7 @@
   import StorageRecovery from './StorageRecovery.svelte';
   import Tip from './Tip.svelte';
   import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra, describeDataStatus, missingCalculationLabel, withDataStatusIndicator } from '$lib/domain/data';
-  import { calculateEntryPerformance, calculateScenario, fmt, nextPlayerActions, supplyActionForEntry } from '$lib/domain/core';
+  import { calculateEntryPerformance, calculateScenario, describeIslandChange, fmt, nextPlayerActions, supplyActionForEntry } from '$lib/domain/core';
   import type { PlayerAction } from '$lib/domain/core';
   import { load, newEntry, save, seed } from '$lib/domain/storage';
   import { PLANNER_NAVIGATION } from '$lib/domain/navigation';
@@ -22,6 +22,7 @@
   let pickerOpen = false;
   let storageIssue: StorageIssue | null = null;
   let storageNotice = '';
+  let changeNotice = '';
 
   $: project = db.projects.find((item) => item.id === db.activeProjectId) ?? db.projects[0];
   $: scenario = project?.scenarios.find((item) => item.id === project.selectedId) ?? project?.scenarios[0];
@@ -47,9 +48,13 @@
     storageNotice = 'Eine neue Beispielinsel wurde angelegt.';
   }
 
-  function commit() {
+  function commit(feedbackLabel = '', previous = result) {
     db = { ...db };
     save(db);
+    if (feedbackLabel && previous) {
+      const after = calculateScenario({ scenario, buildings: projectBuildings, goods: GOODS, settings: db.settings, era: project.era });
+      changeNotice = describeIslandChange(previous, after, feedbackLabel);
+    }
   }
 
   function applyImportedDatabase(imported: Database) {
@@ -62,12 +67,13 @@
   }
 
   function addBuilding(buildingId: string, status: Entry['status'] = 'existing', count = 1, clusterId = scenario.clusters[0].id) {
+    const previous = result;
     const selected = building(buildingId);
     const entry = newEntry(selected.id, clusterId, status);
     entry.modeId = selected.modes[0].id;
     entry.count = count;
     scenario.entries.push(entry);
-    commit();
+    commit(`${fmt(count, 0)} × ${selected.name} ${status === 'planned' ? 'eingeplant' : 'hinzugefügt'}`, previous);
   }
 
   function selectBuilding(buildingId: string) {
@@ -93,16 +99,19 @@
   }
 
   function changeBuilding(entry: Entry) {
+    const previous = result;
     const selected = building(entry.buildingId);
     entry.modeId = selected.modes[0].id;
     entry.rateOverrides = { inputs: {}, outputs: {} };
     entry.upgradeIds = [];
-    commit();
+    commit(`${selected.name} ausgewählt`, previous);
   }
 
   function removeBuilding(id: string) {
+    const previous = result;
+    const removed = scenario.entries.find((entry) => entry.id === id);
     scenario.entries = scenario.entries.filter((entry) => entry.id !== id);
-    commit();
+    commit(`${removed ? building(removed.buildingId).name : 'Gebäude'} entfernt`, previous);
   }
 
   function buildingOptions(entry: Entry) {
@@ -192,8 +201,8 @@
     <header class="app-header">
       <div>
         <span class="product">Tropico 6 Produktionsplaner</span>
-        <label class="project-select"><span class="visually-hidden">Insel</span><select aria-label="Insel" bind:value={db.activeProjectId} onchange={commit}>{#each db.projects as item}<option value={item.id}>{item.name}</option>{/each}</select></label>
-        <label class="era-select"><span class="visually-hidden">Zeitalter</span><select aria-label="Zeitalter" bind:value={project.era} onchange={commit}>{#each ERAS as era}<option value={era.id}>{era.name}</option>{/each}</select></label>
+        <label class="project-select"><span class="visually-hidden">Insel</span><select aria-label="Insel" bind:value={db.activeProjectId} onchange={() => commit()}>{#each db.projects as item}<option value={item.id}>{item.name}</option>{/each}</select></label>
+        <label class="era-select"><span class="visually-hidden">Zeitalter</span><select aria-label="Zeitalter" bind:value={project.era} onchange={() => commit()}>{#each ERAS as era}<option value={era.id}>{era.name}</option>{/each}</select></label>
       </div>
       <nav aria-label="Hauptnavigation">
         {#each PLANNER_NAVIGATION as item}<button class:active={tab === item.id} onclick={() => (tab = item.id)}>{item.label}</button>{/each}
@@ -202,6 +211,7 @@
 
     <section class="content">
       {#if storageNotice}<p class="storage-notice" role="status">{storageNotice}</p>{/if}
+      {#if changeNotice}<p class="change-notice" role="status"><span>{changeNotice}</span><button aria-label="Rückmeldung schließen" onclick={() => (changeNotice = '')}>×</button></p>{/if}
       {#if tab === 'overview'}
         <div class="page-header">
           <div>
@@ -260,7 +270,7 @@
               performance={rowPerformance}
               {supplyAction}
               tooltips={db.settings.tooltips}
-              onChanged={commit}
+              onChanged={() => commit(`${selected.name} aktualisiert`)}
               onBuildingChanged={() => changeBuilding(entry)}
               onPlanSupply={(action) => planSupply(entry, action)}
               onRemove={() => removeBuilding(entry.id)}
@@ -292,6 +302,9 @@
   nav button.active { border-bottom-color: #d9a441; color: #fff; font-weight: 800; }
   .content { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 42px 0; }
   .storage-notice { margin: -20px 0 20px; padding: 11px 14px; border-left: 4px solid #3f7d55; border-radius: 4px; background: #eff8f1; color: #315941; font-weight: 650; }
+  .change-notice { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: -20px 0 20px; padding: 11px 14px; border-left: 4px solid #3f7d55; border-radius: 4px; background: #eff8f1; color: #315941; font-weight: 650; }
+  .change-notice button { width: 28px; height: 28px; flex: 0 0 auto; border-radius: 50%; background: transparent; color: #315941; font-size: 20px; }
+  .change-notice button:hover, .change-notice button:focus-visible { background: #dbeedf; outline: 2px solid #315941; }
   .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
   h1 { margin: 0; font-size: 30px; line-height: 1.2; }
   p { margin: 7px 0 0; color: #657078; font-size: 14px; }
