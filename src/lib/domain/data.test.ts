@@ -28,9 +28,15 @@ describe('generierte Kolonialdaten', () => {
   });
 
   it('erklärt Community-Messwerte für Spieler verständlich', () => {
-    const describeDataStatus = (dataModule as unknown as { describeDataStatus?: (status: string) => string }).describeDataStatus;
+    const { describeDataStatus, missingCalculationLabel } = dataModule as unknown as {
+      describeDataStatus?: (status: string) => string;
+      missingCalculationLabel?: string;
+    };
 
     expect(describeDataStatus?.('measured')).toBe('Datengrundlage: normierter Community-Messwert.');
-    expect(describeDataStatus?.('unknown')).toBe('Datengrundlage: noch nicht ausreichend dokumentiert.');
+    expect(describeDataStatus?.('unknown')).toBe(
+      'Es wurden bisher keine klar belastbaren Produktionswerte gefunden. Daher gibt es hier keine korrekte Berechnung.'
+    );
+    expect(missingCalculationLabel).toBe('Keine belastbare Berechnung');
   });
 });

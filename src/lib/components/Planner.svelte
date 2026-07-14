@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import CalculationPopover from './CalculationPopover.svelte';
   import Tip from './Tip.svelte';
-  import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra, describeDataStatus } from '$lib/domain/data';
+  import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra, describeDataStatus, missingCalculationLabel } from '$lib/domain/data';
   import { calculateEntryPerformance, calculateScenario, fmt } from '$lib/domain/core';
   import { load, newEntry, save, seed } from '$lib/domain/storage';
   import type { Database, Entry } from '$lib/domain/types';
@@ -97,9 +97,9 @@
       };
     }
     if (!value.calculable) return {
-      label:'Werte fehlen',
+      label:missingCalculationLabel,
       blocks:[{title:'Datengrundlage',formula:[`Für ${selected.name} fehlen noch belastbare Produktionswerte.`]}],
-      notes:['Bis zur Verifizierung wird keine Leistung berechnet.']
+      notes:[describeDataStatus(selected.dataStatus)]
     };
     const inputLabel=Object.entries(value.inputs).map(([good,amount])=>`−${fmt(amount)} ${GOODS[good]?.name??good}`).join(', ');
     const outputLabel=Object.entries(value.outputs).map(([good,amount])=>`+${fmt(amount)} ${GOODS[good]?.name??good}`).join(', ');

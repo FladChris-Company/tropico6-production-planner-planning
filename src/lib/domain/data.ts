@@ -11,11 +11,12 @@ export const ERAS: { id: Era; name: string; loadPerTrip: number }[] = [
 
 const ERA_ORDER: Era[] = ERAS.map(era=>era.id);
 export const buildingAvailableInEra = (building: Building, era: Era) => ERA_ORDER.indexOf(building.availableFrom??'colonial')<=ERA_ORDER.indexOf(era);
+export const missingCalculationLabel = 'Keine belastbare Berechnung';
 export const describeDataStatus = (status: Building['dataStatus']) => ({
   verified:'Datengrundlage: bestätigter statischer Spielwert.',
   measured:'Datengrundlage: normierter Community-Messwert.',
   estimated:'Datengrundlage: gekennzeichneter Schätzwert.',
-  unknown:'Datengrundlage: noch nicht ausreichend dokumentiert.',
+  unknown:'Es wurden bisher keine klar belastbaren Produktionswerte gefunden. Daher gibt es hier keine korrekte Berechnung.',
   model:'Datengrundlage: transparente Modellannahme.'
 })[status];
 
