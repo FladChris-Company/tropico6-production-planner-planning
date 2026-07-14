@@ -1,5 +1,77 @@
 import { describe, expect, it } from 'vitest';
-import { importProjectBackup, seed, serializeProjectBackup } from './storage';
+import { LEGACY_STORAGE_KEY, STORAGE_KEY, importProjectBackup, load, seed, serializeProjectBackup } from './storage';
+
+const memoryStorage = (initial: Record<string, string> = {}) => {
+  const values = new Map(Object.entries(initial));
+  return {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key),
+    clear: () => values.clear(),
+    key: (index: number) => [...values.keys()][index] ?? null,
+    get length() { return values.size; }
+  } satisfies Storage;
+};
+
+describe('local island storage', () => {
+  it('migrates the legacy beta island without losing its building settings', () => {
+    const legacy = {
+      schema: 1,
+      projects: [{
+        id: 'project-old', name: 'Alte Ruminsel', dlcs: ['base', 'nature'], currentId: 'scenario-old', selectedId: 'scenario-old',
+        scenarios: [{
+          id: 'scenario-old', name: 'Ist-Stand', kind: 'current', clusters: [{ id: 'cluster-old', name: 'Hauptcluster', distance: '' }],
+          entries: [{ id: 'entry-rum', cluster: 'cluster-old', building: 'rum', mode: 'dunder', count: 2, eff: 90, staff: 75, distance: 3, status: 'existing' }]
+        }]
+      }],
+      active: 'project-old',
+      updated: '2026-07-01T10:00:00.000Z'
+    };
+    const storage = memoryStorage({ [LEGACY_STORAGE_KEY]: JSON.stringify(legacy) });
+
+    const result = load(storage);
+
+    expect(result.state).toBe('migrated');
+    expect(result.database?.projects[0]).toMatchObject({ name: 'Alte Ruminsel', era: 'colonial', dlcs: ['base', 'return-to-nature'] });
+    expect(result.database?.projects[0].scenarios[0].entries[0]).toMatchObject({
+      buildingId: 'rum-distillery', modeId: 'dunder', count: 2, efficiency: 90, staffing: 75, distance: 3
+    });
+    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}').schema).toBe(2);
+    expect(storage.getItem(LEGACY_STORAGE_KEY)).toBe(JSON.stringify(legacy));
+  });
+
+  it('does not silently replace malformed local data with the example island', () => {
+    const storage = memoryStorage({ [STORAGE_KEY]: '{broken' });
+
+    const result = load(storage);
+
+    expect(result).toMatchObject({ state: 'recovery', database: null, issue: { kind: 'corrupt', raw: '{broken' } });
+    expect(storage.getItem(STORAGE_KEY)).toBe('{broken');
+  });
+
+  it('keeps an unsupported future schema untouched for recovery', () => {
+    const raw = JSON.stringify({ schema: 99, projects: [] });
+    const storage = memoryStorage({ [STORAGE_KEY]: raw });
+
+    const result = load(storage);
+
+    expect(result).toMatchObject({ state: 'recovery', database: null, issue: { kind: 'unsupported', raw } });
+    expect(storage.getItem(STORAGE_KEY)).toBe(raw);
+  });
+
+  it('normalizes older schema-2 data with missing defaults', () => {
+    const database = seed();
+    const oldProject = structuredClone(database.projects[0]) as Partial<typeof database.projects[0]>;
+    delete oldProject.era;
+    const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify({ ...database, projects: [oldProject], settings: {} }) });
+
+    const result = load(storage);
+
+    expect(result.state).toBe('migrated');
+    expect(result.database?.projects[0].era).toBe('colonial');
+    expect(result.database?.settings.profile).toBe('realistic');
+  });
+});
 
 describe('project backup', () => {
   it('exports the current island with format and version metadata', () => {

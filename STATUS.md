@@ -25,6 +25,8 @@ Produktiv nutzbare Svelte-Anwendung für die Kolonialzeit.
 - rückwärts aufgelöste Bauempfehlung für berechenbare Produktionsketten
 - eigener Produktionsziel-Workflow mit gebaut/geplant/noch bauen und zusätzlichem Arbeiterbedarf
 - versionierter Insel-Export und validierter Import ohne Überschreiben vorhandener Inseln
+- Migration des historischen Beta-Schemas und fehlender Schema-2-Standardfelder
+- Wiederherstellungsansicht mit Rohdatensicherung statt stiller Rücksetzung beschädigter lokaler Daten
 - priorisierte Diagnosen und erklärende Tooltips
 - automatisierte Fachtests, Typprüfung und Produktions-Build
 

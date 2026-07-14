@@ -4,16 +4,20 @@
   import BuildingPicker from './BuildingPicker.svelte';
   import ProjectBackup from './ProjectBackup.svelte';
   import ProductionGoalPlanner from './ProductionGoalPlanner.svelte';
+  import StorageRecovery from './StorageRecovery.svelte';
   import Tip from './Tip.svelte';
   import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra, describeDataStatus, missingCalculationLabel, withDataStatusIndicator } from '$lib/domain/data';
   import { calculateEntryPerformance, calculateScenario, fmt, supplyActionForEntry } from '$lib/domain/core';
   import { load, newEntry, save, seed } from '$lib/domain/storage';
+  import type { StorageIssue } from '$lib/domain/storage';
   import type { Database, Entry } from '$lib/domain/types';
 
   let ready = false;
   let db: Database = seed();
   let tab: 'overview' | 'planning' | 'buildings' | 'backup' = 'overview';
   let pickerOpen = false;
+  let storageIssue: StorageIssue | null = null;
+  let storageNotice = '';
 
   $: project = db.projects.find((item) => item.id === db.activeProjectId) ?? db.projects[0];
   $: scenario = project?.scenarios.find((item) => item.id === project.selectedId) ?? project?.scenarios[0];
@@ -24,9 +28,19 @@
   $: exportableGoods = result ? result.balances.filter((item) => item.exportable > .01).sort((a,b) => b.exportable - a.exportable) : [];
 
   onMount(() => {
-    db = load();
+    const stored = load();
+    if (stored.database) db = stored.database;
+    storageIssue = stored.issue;
+    storageNotice = stored.state === 'migrated' ? 'Ältere Inseldaten wurden sicher übernommen und auf das aktuelle Format aktualisiert.' : '';
     ready = true;
   });
+
+  function resetAfterStorageIssue() {
+    db = seed();
+    save(db);
+    storageIssue = null;
+    storageNotice = 'Eine neue Beispielinsel wurde angelegt.';
+  }
 
   function commit() {
     db = { ...db };
@@ -153,7 +167,9 @@
   }
 </script>
 
-{#if ready && project && scenario && result}
+{#if ready && storageIssue}
+  <StorageRecovery issue={storageIssue} onReset={resetAfterStorageIssue} />
+{:else if ready && project && scenario && result}
   <main>
     <header class="app-header">
       <div>
@@ -170,6 +186,7 @@
     </header>
 
     <section class="content">
+      {#if storageNotice}<p class="storage-notice" role="status">{storageNotice}</p>{/if}
       {#if tab === 'overview'}
         <div class="page-header">
           <div>
@@ -266,6 +283,7 @@
   nav button { padding: 0 16px; border-bottom: 3px solid transparent; background: transparent; color: #dce9e4; font-size: 14px; }
   nav button.active { border-bottom-color: #d9a441; color: #fff; font-weight: 800; }
   .content { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 42px 0; }
+  .storage-notice { margin: -20px 0 20px; padding: 11px 14px; border-left: 4px solid #3f7d55; border-radius: 4px; background: #eff8f1; color: #315941; font-weight: 650; }
   .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
   h1 { margin: 0; font-size: 30px; line-height: 1.2; }
   p { margin: 7px 0 0; color: #657078; font-size: 14px; }

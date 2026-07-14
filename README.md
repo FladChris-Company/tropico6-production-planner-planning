@@ -16,7 +16,7 @@ Work in Progress
 - Fokus: ausschließlich Kolonialzeit
 - Grundspiel und koloniale DLC-Produktionsgebäude
 - zielorientierte Rückwärtsplanung für berechenbare Kolonialketten
-- lokale Speicherung im Browser
+- lokale Speicherung im Browser mit Migration älterer Inselstände und sichtbarer Datenrettung bei Fehlern
 - Inseln als versionierte JSON-Sicherung exportieren und sicher wieder importieren
 - automatische Prüfung vor jeder Veröffentlichung
 
@@ -69,11 +69,12 @@ Der Planer soll nicht nur Zahlen zeigen, sondern typische Fragen während einer 
 - Transportbüros und Transporteinschätzung
 - DLC-Filter für koloniale Produktionsinhalte
 - JSON-Import und -Export mit Format-, Schema- und Gebäudedatenprüfung
+- Wiederherstellungsansicht statt stiller Beispielinsel bei beschädigten oder unbekannten lokalen Daten
 - mobile Darstellung und Offline-Grundlage
 
 ## Speicherung
 
-Inseln und Prognosen werden automatisch im lokalen Speicher des jeweiligen Browsers gespeichert. Über „Sicherung“ kann die aktive Insel als JSON-Datei gespeichert und später wieder importiert werden. Ein Import legt eine eigene Insel an und überschreibt den vorhandenen Stand nicht. Die Daten werden dabei nur auf dem Gerät verarbeitet und nicht an einen Server übertragen.
+Inseln und Prognosen werden automatisch im lokalen Speicher des jeweiligen Browsers gespeichert. Bekannte ältere Speicherstände werden verlustfrei auf das aktuelle Schema migriert. Beschädigte oder unbekannte Daten werden nicht automatisch ersetzt: Der Planer bietet zuerst eine Sicherung der Rohdaten und verlangt eine ausdrückliche Bestätigung, bevor eine neue Beispielinsel angelegt wird. Über „Sicherung“ kann die aktive Insel außerdem als JSON-Datei gespeichert und später wieder importiert werden. Ein Import legt eine eigene Insel an und überschreibt den vorhandenen Stand nicht. Die Daten werden nur auf dem Gerät verarbeitet und nicht an einen Server übertragen.
 
 ## Spieldaten für den Kolonialzeit-MVP
 
