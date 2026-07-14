@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import BuildingCard from './BuildingCard.svelte';
   import BuildingPicker from './BuildingPicker.svelte';
+  import DesktopOnboarding from './DesktopOnboarding.svelte';
   import NextActions from './NextActions.svelte';
   import ProjectBackup from './ProjectBackup.svelte';
   import ProductionGoalPlanner from './ProductionGoalPlanner.svelte';
@@ -16,6 +17,7 @@
   import type { PlannerTab } from '$lib/domain/navigation';
   import { removeEntry, restoreEntry } from '$lib/domain/entries';
   import type { RemovedEntry } from '$lib/domain/entries';
+  import { completeOnboarding, shouldShowOnboarding } from '$lib/domain/onboarding';
   import type { StorageIssue } from '$lib/domain/storage';
   import type { Database, Entry } from '$lib/domain/types';
 
@@ -27,6 +29,7 @@
   let storageNotice = '';
   let changeNotice = '';
   let removedEntry: RemovedEntry | null = null;
+  let onboardingOpen = false;
 
   $: project = db.projects.find((item) => item.id === db.activeProjectId) ?? db.projects[0];
   $: scenario = project?.scenarios.find((item) => item.id === project.selectedId) ?? project?.scenarios[0];
@@ -43,8 +46,15 @@
     if (stored.database) db = stored.database;
     storageIssue = stored.issue;
     storageNotice = stored.state === 'migrated' ? 'Ältere Inseldaten wurden sicher übernommen und auf das aktuelle Format aktualisiert.' : '';
+    onboardingOpen = shouldShowOnboarding();
     ready = true;
   });
+
+  function finishOnboarding(startWithBuildings = false) {
+    completeOnboarding();
+    onboardingOpen = false;
+    if (startWithBuildings) tab = 'buildings';
+  }
 
   function resetAfterStorageIssue() {
     db = seed();
@@ -241,6 +251,7 @@
             <h1>Inselstand</h1>
             <p>Der aktuelle Stand deiner Insel auf einen Blick.</p>
           </div>
+          <button class="guide-button" onclick={() => (onboardingOpen = true)}>Erste Schritte</button>
         </div>
 
         <NextActions actions={playerActions} onAction={runPlayerAction} />
@@ -304,6 +315,7 @@
       {/if}
 
       <BuildingPicker buildings={selectableBuildings} goods={GOODS} open={pickerOpen} onSelect={selectBuilding} onClose={() => (pickerOpen = false)} />
+      <DesktopOnboarding open={onboardingOpen} onClose={() => (onboardingOpen = false)} onSkip={() => finishOnboarding()} onStart={() => finishOnboarding(true)} />
     </section>
   </main>
 {/if}
@@ -339,6 +351,8 @@
   .add-button { min-height: 42px; padding: 0 17px; border: 1px solid #a83b28; border-radius: 6px; background: #c94c32; color: #fff; font-weight: 750; }
   .add-button:hover { background: #a93c28; }
   .add-button:disabled { border-color: #aeb7bc; background: #aeb7bc; cursor: not-allowed; }
+  .guide-button { min-height: 38px; padding: 0 13px; border: 1px solid #7e7055; border-radius: 5px; background: transparent; color: #4f4737; font-weight: 700; }
+  .guide-button:hover, .guide-button:focus-visible { background: #eadfc7; outline: 2px solid #234f45; }
   .overview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
   .summary { min-height: 220px; padding: 20px; border: 1px solid #d1c3a6; border-radius: 10px; background: #fff9ed; box-shadow: 0 4px 14px rgb(65 53 28 / 7%); }
   .summary h2 { margin: 0 0 16px; font-size: 17px; }
