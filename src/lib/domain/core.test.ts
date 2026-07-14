@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BUILDINGS, DEFAULT_SETTINGS, GOODS, buildingAvailableInEra } from './data';
-import { buildGoalPlan, calculateEntryPerformance, calculateScenario, describeIslandChange, goalRequirements, nextPlayerActions, supplyActionForEntry } from './core';
+import { buildGoalPlan, calculateEntryPerformance, calculateScenario, describeIslandChange, goalRequirements, nextPlayerActions, productionChainStatus, supplyActionForEntry } from './core';
 import type { Entry, Scenario } from './types';
 
 const entry=(id:string,buildingId:string,count:number,modeId='standard',status:Entry['status']='existing'):Entry=>({id,clusterId:'main',buildingId,modeId,count,efficiency:100,staffing:100,distance:'',status,note:'',rateOverrides:{inputs:{},outputs:{}}});
@@ -53,6 +53,18 @@ describe('Kolonialzeit-Berechnung',()=>{
     const after=calculate([entry('sugar','plantation-sugar',2),entry('rum','rum-distillery',1,'dunder')]);
 
     expect(describeIslandChange(before,after,'Zuckerplantage eingeplant')).toBe('Zuckerplantage eingeplant: 1 Produktionsengpass behoben.');
+  });
+
+  it('übersetzt eine Produktionskette in Bedarf, Lieferung und Fehlmenge',()=>{
+    const result=calculate([entry('sugar','plantation-sugar',1),entry('rum','rum-distillery',1,'dunder')]);
+
+    expect(productionChainStatus(result,GOODS)[0]).toEqual(expect.objectContaining({
+      buildingName:'Rumbrennerei',
+      goodName:'Zucker',
+      status:'shortage',
+      action:expect.objectContaining({buildingName:'Zuckerplantage'})
+    }));
+    expect(productionChainStatus(result,GOODS)[0].needed).toBeGreaterThan(productionChainStatus(result,GOODS)[0].delivered);
   });
 
   it('berücksichtigt Besetzung und Erwartungsprofil',()=>{

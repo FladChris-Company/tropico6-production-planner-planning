@@ -163,6 +163,35 @@ export function supplyActionForEntry(result: ReturnType<typeof calculateScenario
   };
 }
 
+export type ProductionChainStatus = {
+  entryId: string;
+  buildingName: string;
+  goodId: string;
+  goodName: string;
+  needed: number;
+  delivered: number;
+  missing: number;
+  status: 'covered' | 'shortage';
+  action: ReturnType<typeof supplyActionForEntry>;
+};
+
+export function productionChainStatus(result: ReturnType<typeof calculateScenario>, goods: Record<string, { name: string }>): ProductionChainStatus[] {
+  return result.chainSummaries.flatMap((chain) => {
+    const action = supplyActionForEntry(result, chain.entryId);
+    return chain.inputs.map((input) => ({
+      entryId: chain.entryId,
+      buildingName: chain.buildingName,
+      goodId: input.goodId,
+      goodName: goods[input.goodId]?.name ?? input.goodId,
+      needed: input.demand,
+      delivered: input.actual,
+      missing: input.missing,
+      status: input.missing > .01 ? 'shortage' as const : 'covered' as const,
+      action: action?.goodId === input.goodId ? action : null
+    }));
+  });
+}
+
 export type PlayerAction =
   | { kind: 'supply'; title: string; detail: string; entryId: string; buildingId: string; count: number }
   | { kind: 'teamster'; title: string; detail: string; buildingId: 'teamster-office'; count: number }

@@ -5,11 +5,12 @@
   import NextActions from './NextActions.svelte';
   import ProjectBackup from './ProjectBackup.svelte';
   import ProductionGoalPlanner from './ProductionGoalPlanner.svelte';
+  import ProductionStatus from './ProductionStatus.svelte';
   import StorageRecovery from './StorageRecovery.svelte';
   import Tip from './Tip.svelte';
   import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra, describeDataStatus, missingCalculationLabel, withDataStatusIndicator } from '$lib/domain/data';
-  import { calculateEntryPerformance, calculateScenario, describeIslandChange, fmt, nextPlayerActions, supplyActionForEntry } from '$lib/domain/core';
-  import type { PlayerAction } from '$lib/domain/core';
+  import { calculateEntryPerformance, calculateScenario, describeIslandChange, fmt, nextPlayerActions, productionChainStatus, supplyActionForEntry } from '$lib/domain/core';
+  import type { PlayerAction, ProductionChainStatus } from '$lib/domain/core';
   import { load, newEntry, save, seed } from '$lib/domain/storage';
   import { PLANNER_NAVIGATION } from '$lib/domain/navigation';
   import type { PlannerTab } from '$lib/domain/navigation';
@@ -35,6 +36,7 @@
   $: result = scenario ? calculateScenario({ scenario, buildings: projectBuildings, goods: GOODS, settings: db.settings, era: project?.era }) : null;
   $: exportableGoods = result ? result.balances.filter((item) => item.exportable > .01).sort((a,b) => b.exportable - a.exportable) : [];
   $: playerActions = result ? nextPlayerActions(result) : [];
+  $: productionRows = result ? productionChainStatus(result, GOODS) : [];
 
   onMount(() => {
     const stored = load();
@@ -100,6 +102,12 @@
       return;
     }
     tab = 'buildings';
+  }
+
+  function planProduction(row: ProductionChainStatus) {
+    if (!row.action) return;
+    const entry = scenario.entries.find((item) => item.id === row.entryId);
+    addBuilding(row.action.buildingId, 'planned', row.action.count, entry?.clusterId ?? scenario.clusters[0].id);
   }
 
   function changeBuilding(entry: Entry) {
@@ -236,6 +244,7 @@
         </div>
 
         <NextActions actions={playerActions} onAction={runPlayerAction} />
+        <ProductionStatus rows={productionRows} onPlan={planProduction} />
 
         <div class="overview-grid">
           <section class="summary surplus-summary">
