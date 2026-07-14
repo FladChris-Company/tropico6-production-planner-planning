@@ -9,6 +9,10 @@ export interface Mode {
   availableFrom?: Era;
   inputs: Record<string, number | null>;
   outputs: Record<string, number | null>;
+  referenceBatch?: {
+    inputs: Record<string, number>;
+    outputs: Record<string, number>;
+  };
 }
 
 export interface Building {
@@ -22,6 +26,7 @@ export interface Building {
   kind: 'production' | 'teamster' | 'infrastructure';
   stage: number;
   dataStatus: DataStatus;
+  dataNote?: string;
   source: string;
   availableFrom?: Era;
   modes: Mode[];

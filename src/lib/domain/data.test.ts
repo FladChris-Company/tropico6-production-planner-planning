@@ -22,15 +22,20 @@ describe('generierte Kolonialdaten', () => {
     expect(toys).toEqual(expect.objectContaining({
       name: 'Spielzeugfabrik',
       dataStatus: 'unknown',
-      modes: [expect.objectContaining({ inputs: { logs: null }, outputs: { toys: null } })]
+      modes: expect.arrayContaining([
+        expect.objectContaining({ inputs: { logs: null }, outputs: { toys: null }, referenceBatch: { inputs: { logs: 1000 }, outputs: { toys: 1729 } } }),
+        expect.objectContaining({ inputs: { cotton: null }, outputs: { toys: null } }),
+        expect.objectContaining({ inputs: { rubber: null }, outputs: { toys: null } })
+      ])
     }));
     expect(GOODS.logs.name).toBe('Baumstämme');
   });
 
   it('erklärt Community-Messwerte für Spieler verständlich', () => {
-    const { describeDataStatus, missingCalculationLabel } = dataModule as unknown as {
+    const { describeDataStatus, missingCalculationLabel, withDataStatusIndicator } = dataModule as unknown as {
       describeDataStatus?: (status: string) => string;
       missingCalculationLabel?: string;
+      withDataStatusIndicator?: (label: string, status: string) => string;
     };
 
     expect(describeDataStatus?.('measured')).toBe('Datengrundlage: normierter Community-Messwert.');
@@ -38,5 +43,6 @@ describe('generierte Kolonialdaten', () => {
       'Es wurden bisher keine klar belastbaren Produktionswerte gefunden. Daher gibt es hier keine korrekte Berechnung.'
     );
     expect(missingCalculationLabel).toBe('Keine belastbare Berechnung');
+    expect(withDataStatusIndicator?.('+14.000 Fisch', 'estimated')).toBe('+14.000 Fisch · Schätzung');
   });
 });

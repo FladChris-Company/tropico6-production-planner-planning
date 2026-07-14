@@ -92,9 +92,27 @@ function recipeRates(recipe, goodIds, calculable, errors) {
   return result;
 }
 
+function referenceBatch(recipes, goodIds) {
+  if (!recipes.length || !recipes.every((recipe) => recipe.data_status === 'measured_community_batch')) return undefined;
+  const inputs = {}, outputs = {};
+  const add = (target, goodName, amount) => {
+    if (!goodName || !String(amount ?? '').trim()) return;
+    const goodId = goodIds.get(goodName.trim().toLowerCase());
+    if (goodId) target[goodId] = numberOrZero(amount);
+  };
+  for (const recipe of recipes) {
+    add(inputs, recipe.input_1_good, recipe.input_1_qty_per_worker_workday);
+    add(inputs, recipe.input_2_good, recipe.input_2_qty_per_worker_workday);
+    add(outputs, recipe.output_good, recipe.output_qty_per_worker_workday);
+  }
+  return { inputs, outputs };
+}
+
 function statusFor(recipes) {
-  return recipes.every((recipe) => recipe.data_status === 'measured_community' && recipe.measurement_basis === RATE_BASIS) ? 'measured' :
-    'unknown';
+  const statuses = recipes.map((recipe) => recipe.measurement_basis === RATE_BASIS ? recipe.data_status : 'unknown');
+  if (statuses.every((status) => status === 'measured_community')) return 'measured';
+  if (statuses.every((status) => ['measured_community', 'estimated_community'].includes(status))) return 'estimated';
+  return 'unknown';
 }
 
 function sourceFor(building, recipes) {
@@ -103,14 +121,15 @@ function sourceFor(building, recipes) {
 }
 
 function modeFromRecipes(id, name, recipes, goodIds, errors) {
-  const calculable = recipes.every((recipe) => recipe.data_status === 'measured_community' && recipe.measurement_basis === RATE_BASIS);
+  const calculable = recipes.every((recipe) => ['measured_community', 'estimated_community'].includes(recipe.data_status) && recipe.measurement_basis === RATE_BASIS);
   const inputs = {}, outputs = {};
   for (const recipe of recipes) {
     const rates = recipeRates(recipe, goodIds, calculable, errors);
     Object.assign(inputs, rates.inputs);
     Object.assign(outputs, rates.outputs);
   }
-  return { id, name, availableFrom: ERA_IDS.get(recipes[0]?.mode_era) ?? 'colonial', inputs, outputs };
+  const batch = referenceBatch(recipes, goodIds);
+  return { id, name, availableFrom: ERA_IDS.get(recipes[0]?.mode_era) ?? 'colonial', inputs, outputs, ...(batch ? { referenceBatch: batch } : {}) };
 }
 
 function genericVariants(building, recipes, goodsById, goodIds, errors) {
@@ -150,6 +169,7 @@ function createBuilding(building, recipes, goodIds, errors, overrides = {}) {
     : [{ id: 'standard', name: 'Standard', inputs: {}, outputs: {} }]);
   const stage = building.building_id === 'printing_house' ? 2 : modes.some((mode) => Object.keys(mode.inputs).length > 0) ? 1 : production ? 0 : 99;
   const primaryOutput = Object.keys(modes[0]?.outputs ?? {})[0];
+  const dataNote = [...new Set(recipes.map((recipe) => recipe.notes).filter(Boolean))].join(' ');
   return {
     id: overrides.id ?? RUNTIME_IDS.get(building.building_id) ?? slug(building.building_id),
     name: overrides.name ?? building.name_de,
@@ -161,6 +181,7 @@ function createBuilding(building, recipes, goodIds, errors, overrides = {}) {
     kind: teamster ? 'teamster' : production ? 'production' : 'infrastructure',
     stage: teamster ? 99 : stage,
     dataStatus: production ? statusFor(recipes) : 'verified',
+    ...(dataNote ? { dataNote } : {}),
     source: sourceFor(building, recipes),
     availableFrom: 'colonial',
     modes
@@ -197,7 +218,6 @@ export function generateColonialData({ buildingsCsv, recipesCsv, goodsCsv, modes
   const buildings = colonialRows.flatMap((building) => {
     let recipes = recipesByBuilding.get(building.building_id) ?? [];
     if (building.building_id === 'mine') recipes = recipes.filter((recipe) => ['mine_coal', 'mine_iron', 'mine_gold'].includes(recipe.recipe_id));
-    if (building.building_id === 'toy_workshop') recipes = recipes.filter((recipe) => recipe.recipe_id === 'toy_workshop_wooden');
     return ['plantation', 'ranch', 'mine'].includes(building.building_id)
       ? genericVariants(building, recipes, goodsById, goodIds, errors)
       : [createBuilding(building, recipes, goodIds, errors)];

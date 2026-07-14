@@ -59,6 +59,22 @@ describe('Kolonialdaten-Generator', () => {
     expect(result.validation.errors).toContain('Negative Menge output in plantation_sugar');
   });
 
+  it('übernimmt eine Community-Schätzung als berechenbaren Schätzwert', async () => {
+    const { generateColonialData } = await loadGenerator();
+    const estimatedBuildings = `${buildingsCsv}\nfishermens_wharf;Fischereihafen;Fishermen's Wharf;Kolonialzeit;Nahrung und Rohstoffe;Grundspiel;Ja;Nein;5;Ungebildet;verified_wiki_table;https://example.test/wharf`;
+    const estimatedRecipes = `${recipesCsv}\nfishermens_wharf_forefathers;fishermens_wharf;Grundmodus;5;;;;;Fish;3.5;je Arbeiter und Arbeitstag bei 100 % Effizienz;estimated_community;https://example.test/estimate;Stark abhängig von der Fahrstrecke zum Fischvorkommen.`;
+    const estimatedGoods = `${goodsCsv}\nfish;Fisch;Fish;Rohstoff;name_from_production_dataset;https://example.test/goods`;
+    const estimatedModes = `${modesCsv}\nfishermens_wharf_forefathers;fishermens_wharf;Grundmodus;Kolonialzeit;estimated_community;https://example.test/estimate`;
+    const recipesWithNotesHeader = estimatedRecipes.replace('measurement_basis;data_status;source_url', 'measurement_basis;data_status;source_url;notes');
+    const result = generateColonialData({ buildingsCsv: estimatedBuildings, recipesCsv: recipesWithNotesHeader, goodsCsv: estimatedGoods, modesCsv: estimatedModes, sourcesCsv });
+
+    expect(result.buildings.find((building) => building.id === 'fishermen-wharf')).toEqual(expect.objectContaining({
+      dataStatus: 'estimated',
+      dataNote: 'Stark abhängig von der Fahrstrecke zum Fischvorkommen.',
+      modes: [expect.objectContaining({ outputs: { fish: 3500 } })]
+    }));
+  });
+
   it('verarbeitet die vollständige manuelle Wissensquelle ohne Validierungsfehler', async () => {
     const { generateColonialData } = await loadGenerator();
     const [realBuildings, realRecipes, realGoods, realModes, realSources] = await Promise.all([
@@ -72,12 +88,12 @@ describe('Kolonialdaten-Generator', () => {
 
     expect(result.validation.errors).toEqual([]);
     expect(result.source.colonialBuildingRows).toBe(54);
-    expect(result.source.colonialRecipeRows).toBe(42);
-    expect(result.source.colonialModeRows).toBe(42);
-    expect(result.sources).toHaveLength(5);
+    expect(result.source.colonialRecipeRows).toBe(46);
+    expect(result.source.colonialModeRows).toBe(46);
+    expect(result.sources).toHaveLength(10);
   });
 
-  it('liefert nur kolonial nutzbare Varianten und markiert Testchargen als unberechenbar', async () => {
+  it('liefert koloniale Produktionswege und bewahrt Testchargen ohne falsche Zeitrate', async () => {
     const { generateColonialData } = await loadGenerator();
     const [realBuildings, realRecipes, realGoods, realModes, realSources] = await Promise.all([
       readFile(new URL('../manual/gebaeude.csv', import.meta.url), 'utf8'),
@@ -90,12 +106,29 @@ describe('Kolonialdaten-Generator', () => {
 
     expect(result.buildings).toHaveLength(69);
     expect(result.buildings.filter((building) => building.id.startsWith('mine-')).map((building) => building.id)).toEqual(['mine-coal', 'mine-iron', 'mine-gold']);
-    expect(result.buildings.some((building) => building.id === 'fishermen-wharf')).toBe(true);
+    expect(result.buildings.find((building) => building.id === 'fishermen-wharf')).toEqual(expect.objectContaining({
+      dataStatus: 'estimated',
+      modes: [expect.objectContaining({ outputs: { fish: 3500 } })]
+    }));
+    expect(result.sources).toContainEqual(expect.objectContaining({ id: 'reddit_colonial_economy' }));
     expect(result.buildings.find((building) => building.id === 'ranch-cattle').modes[0].outputs).toEqual({ meat: 1500, hides: 2000 });
     expect(result.buildings.find((building) => building.id === 'toy-workshop')).toEqual(expect.objectContaining({
       dataStatus: 'unknown',
-      modes: [expect.objectContaining({ inputs: { logs: null }, outputs: { toys: null } })]
+      modes: [
+        expect.objectContaining({ inputs: { logs: null }, outputs: { toys: null }, referenceBatch: { inputs: { logs: 1000 }, outputs: { toys: 1729 } } }),
+        expect.objectContaining({ inputs: { cotton: null }, outputs: { toys: null } }),
+        expect.objectContaining({ inputs: { rubber: null }, outputs: { toys: null } })
+      ]
     }));
+    expect(result.buildings.find((building) => building.id === 'logging-camp')).toEqual(expect.objectContaining({
+      dataStatus: 'estimated',
+      modes: [expect.objectContaining({ outputs: { logs: 3000 } })]
+    }));
+    expect(result.buildings.find((building) => building.id === 'charcoal-burner').modes[0]).toEqual(expect.objectContaining({
+      inputs: { logs: null },
+      outputs: { coal: null }
+    }));
+    expect(result.buildings.find((building) => building.id === 'fireworks-factory').modes).toHaveLength(4);
     expect(result.buildings.find((building) => building.id === 'rum-distillery').icon).toBe('🍾');
   });
 });

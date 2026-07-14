@@ -1,15 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import CalculationPopover from './CalculationPopover.svelte';
+  import ProductionGoalPlanner from './ProductionGoalPlanner.svelte';
   import Tip from './Tip.svelte';
-  import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra, describeDataStatus, missingCalculationLabel } from '$lib/domain/data';
+  import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra, describeDataStatus, missingCalculationLabel, withDataStatusIndicator } from '$lib/domain/data';
   import { calculateEntryPerformance, calculateScenario, fmt } from '$lib/domain/core';
   import { load, newEntry, save, seed } from '$lib/domain/storage';
   import type { Database, Entry } from '$lib/domain/types';
 
   let ready = false;
   let db: Database = seed();
-  let tab: 'overview' | 'buildings' = 'overview';
+  let tab: 'overview' | 'planning' | 'buildings' = 'overview';
 
   $: project = db.projects.find((item) => item.id === db.activeProjectId) ?? db.projects[0];
   $: scenario = project?.scenarios.find((item) => item.id === project.selectedId) ?? project?.scenarios[0];
@@ -96,11 +97,22 @@
         ]
       };
     }
-    if (!value.calculable) return {
-      label:missingCalculationLabel,
-      blocks:[{title:'Datengrundlage',formula:[`Für ${selected.name} fehlen noch belastbare Produktionswerte.`]}],
-      notes:[describeDataStatus(selected.dataStatus)]
-    };
+    if (!value.calculable) {
+      const inputGoods = Object.keys(value.mode.inputs).map((good) => GOODS[good]?.name ?? good);
+      const outputGoods = Object.keys(value.mode.outputs).map((good) => GOODS[good]?.name ?? good);
+      const relationship = [inputGoods.join(' + '), outputGoods.join(' + ')].filter(Boolean).join(' → ');
+      const batch = value.mode.referenceBatch;
+      const batchSide = (rates: Record<string, number>) => Object.entries(rates).map(([good, amount]) => `${fmt(amount, 0)} ${GOODS[good]?.name ?? good}`).join(' + ');
+      const batchText = batch ? `${batchSide(batch.inputs)} → ${batchSide(batch.outputs)}` : '';
+      return {
+        label: relationship ? `${relationship} · Rate fehlt` : missingCalculationLabel,
+        blocks:[
+          {title:'Bekannter Produktionsweg',formula:[relationship || `Für ${selected.name} ist noch kein Produktionsweg dokumentiert.`]},
+          ...(batchText ? [{title:'Dokumentierte Testcharge',formula:[batchText,'Diese Mengen zeigen nur das Umwandlungsverhältnis, nicht die Leistung pro Arbeitstag.']}] : [])
+        ],
+        notes:[describeDataStatus(selected.dataStatus),...(selected.dataNote ? [selected.dataNote] : [])]
+      };
+    }
     const inputLabel=Object.entries(value.inputs).map(([good,amount])=>`−${fmt(amount)} ${GOODS[good]?.name??good}`).join(', ');
     const outputLabel=Object.entries(value.outputs).map(([good,amount])=>`+${fmt(amount)} ${GOODS[good]?.name??good}`).join(', ');
     const unit = selected.id === 'plantation-sugar' ? (entry.count === 1 ? 'Plantage' : 'Plantagen') : selected.id === 'rum-distillery' ? (entry.count === 1 ? 'Destillerie' : 'Destillerien') : (entry.count === 1 ? 'Gebäude' : 'Gebäude');
@@ -111,9 +123,9 @@
     }));
     const dataNote = describeDataStatus(selected.dataStatus);
     return {
-      label:[inputLabel,outputLabel].filter(Boolean).join(' → '),
+      label:withDataStatusIndicator([inputLabel,outputLabel].filter(Boolean).join(' → '), selected.dataStatus),
       blocks:[...blocks(value.mode.inputs,'Verbrauch'),...blocks(value.mode.outputs,'Produktion')],
-      notes:[value.mode.name === 'Standard' || value.mode.name === 'Normalbetrieb' ? `Arbeitsmodus: ${value.mode.name}` : `Berücksichtigt: ${value.mode.name}`,dataNote]
+      notes:[value.mode.name === 'Standard' || value.mode.name === 'Normalbetrieb' ? `Arbeitsmodus: ${value.mode.name}` : `Berücksichtigt: ${value.mode.name}`,dataNote,...(selected.dataNote ? [selected.dataNote] : [])]
     };
   }
 </script>
@@ -127,6 +139,7 @@
       </div>
       <nav aria-label="Hauptnavigation">
         <button class:active={tab === 'overview'} onclick={() => (tab = 'overview')}>Übersicht</button>
+        <button class:active={tab === 'planning'} onclick={() => (tab = 'planning')}>Planung</button>
         <button class:active={tab === 'buildings'} onclick={() => (tab = 'buildings')}>Gebäude</button>
       </nav>
     </header>
@@ -161,6 +174,8 @@
             <table class="summary-table"><thead><tr><th>Bildungsgrad</th><th>Benötigt</th></tr></thead><tbody><tr><td>Ungelernt</td><td>{fmt(result.educationJobs.uneducated, 0)}</td></tr><tr><td>Oberschule</td><td>{fmt(result.educationJobs['high-school'], 0)}</td></tr><tr><td>Hochschule</td><td>{fmt(result.educationJobs.college, 0)}</td></tr></tbody></table>
           </section>
         </div>
+      {:else if tab === 'planning'}
+        <ProductionGoalPlanner buildings={selectableBuildings} entries={scenario.entries} settings={db.settings} goods={GOODS} />
       {:else}
         <div class="page-header">
           <div>

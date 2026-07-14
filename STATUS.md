@@ -13,11 +13,14 @@ Produktiv nutzbare Svelte-Anwendung für die Kolonialzeit.
 - Kolonialzeit-Gebäude des Grundspiels und auswählbare DLC-Inhalte
 - generierte Kolonialdaten aus der validierten CSV-Wissensquelle unter `manual/`
 - normierte Produktionsraten in Warenbestands-Einheiten je Arbeiter-Arbeitstag
+- sichtbare, quellenbasierte Schätzwerte mit dokumentierten Annahmen
+- belegte koloniale Produktionswege und Testchargen auch ohne erfundene Zeitrate
 - Produktions-, Verbrauchs-, Reserve- und Exportbilanz
 - theoretische und erwartete Produktion mit sichtbaren Annahmen
 - Effizienz, Besetzung, Arbeitsmodi und individuelle Raten
 - Arbeitsplätze und qualitative Transportbewertung
 - rückwärts aufgelöste Bauempfehlung für berechenbare Produktionsketten
+- eigener Produktionsziel-Workflow mit gebaut/geplant/noch bauen und zusätzlichem Arbeiterbedarf
 - priorisierte Diagnosen und erklärende Tooltips
 - automatisierte Fachtests, Typprüfung und Produktions-Build
 

@@ -1,8 +1,8 @@
 ﻿dataset;rows;coverage;known_limitations
 gebaeude.csv;234;234/234 reguläre Gebäude und Module;Deutsche Namen nicht vollständig gegen aktuelle Lokalisierungsdateien geprüft.
-produktionsrezepte.csv;116;"98 Mess-/Testdatensätze; 18 Platzhalter";DLC-Produktionsraten sind öffentlich oft nicht belastbar dokumentiert.
-arbeitsmodi.csv;116;Aus Produktionsvarianten abgeleitete bekannte Arbeitsmodi und unbekannte Platzhalter;Nicht-produktive Arbeitsmodi und viele DLC-Arbeitsmodi fehlen.
+produktionsrezepte.csv;121;"94 normierte Messwerte; 8 Testchargen; 2 Schätzwerte; 8 bestätigte Produktionswege ohne Zeitrate; 9 Platzhalter";Für mehrere DLC-Gebäude sind Produktionswege, aber keine belastbaren Zeitraten dokumentiert.
+arbeitsmodi.csv;121;Bekannte Produktionsvarianten inklusive kolonialer Spielzeug-, Feuerwerk-, Papier- und Bücherwege;Nicht-produktive Arbeitsmodi und viele DLC-Arbeitsmodi fehlen.
 verbesserungen.csv;237;"Alle Gebäude als Platzhalter; 3 bekannte Verbesserungen der Spielzeugfabrik";Keine vollständige öffentliche Gesamttabelle für Verbesserungen gefunden.
 budgetstufen.csv;239;"Alle Gebäude als Platzhalter; 5 bekannte Budgetstufen der Spielzeugfabrik";Budgetwerte müssen pro Einzelgebäude recherchiert oder aus Spieldateien extrahiert werden.
-waren.csv;44;Alle in den vorhandenen Produktionsrezepten vorkommenden Waren;DLC-Waren ohne belastbares Rezept können fehlen.
+waren.csv;48;Alle in den vorhandenen Produktionsrezepten vorkommenden Waren;DLC-Waren ohne dokumentierten Produktionsweg können fehlen.
 sonderobjekte.csv;41;Straße, Abrisswerkzeug, Hütte, Dekorationen und Weltwunder;Deutsche Weltwundernamen teilweise manuell übersetzt.

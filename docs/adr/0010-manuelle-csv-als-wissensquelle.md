@@ -15,7 +15,8 @@ Die neuen CSV-Dateien unter `manual/` enthalten den umfassendsten recherchierten
 - Nur koloniale Gebäude werden in die MVP-Laufzeitdaten übernommen.
 - Plantagen, Ranches und Minen werden als spielernahe auswählbare Varianten ausgegeben.
 - Gemessene Raten je Arbeiter-Arbeitstag werden mit Faktor 1.000 in Warenbestands-Einheiten normalisiert.
-- Nicht normierte Testchargen und unbekannte Werte bleiben `null` und damit unberechenbar.
+- Normierte Community-Schätzungen dürfen berechnet werden, wenn Quelle und Annahmen dokumentiert sind; sie bleiben als `estimated` sichtbar.
+- Nicht normierte Testchargen und Produktionswege ohne Zeitrate bleiben für die Mengenberechnung `null`. Ihre Ein-/Ausgangswaren und Chargenverhältnisse werden dennoch angezeigt.
 - Spätere Minenvarianten und nicht koloniale Arbeitsmodi werden im Kolonialzeit-MVP nicht angeboten.
 - Die generierte JSON-Datei wird eingecheckt und in CI gegen die CSV-Quelle geprüft.
 

@@ -15,6 +15,7 @@ Work in Progress
 - Version: `v1.0.0`
 - Fokus: ausschließlich Kolonialzeit
 - Grundspiel und koloniale DLC-Produktionsgebäude
+- zielorientierte Rückwärtsplanung für berechenbare Kolonialketten
 - lokale Speicherung im Browser
 - Import und Export als geplanter Sicherungsschritt
 - automatische Prüfung vor jeder Veröffentlichung
@@ -53,6 +54,9 @@ Der Planer soll nicht nur Zahlen zeigen, sondern typische Fragen während einer 
 - Prognosen übernehmen, kopieren und löschen
 - Produktionsketten mit Versorgungsgrad
 - konkrete Hinweise zu fehlenden Rohstoffgebäuden
+- Produktionsziel nach Endgebäude, Arbeitsmodus und gewünschter Anzahl
+- Vergleich der Empfehlung mit bereits gebauten und geplanten Gebäuden
+- zusätzlicher Arbeiterbedarf des empfohlenen Ausbaus
 - Produktion, Verbrauch, Restmenge und Fehlmenge je Ware
 - externe Warenversorgung und Mindestreserven
 - exportierbare Überschüsse
@@ -70,7 +74,7 @@ Inseln und Prognosen werden aktuell automatisch im lokalen Speicher des jeweilig
 
 Die CSV-Dateien unter `manual/` sind die gepflegte Wissensquelle für Gebäude, Waren, Produktionsrezepte, Arbeitsmodi und Quellen. Ein validierter Generator erzeugt daraus die von der Anwendung verwendeten Kolonialdaten in `src/lib/domain/generated/colonial-data.json`.
 
-Gemessene Raten je Arbeiter-Arbeitstag werden in Warenbestands-Einheiten umgerechnet. Ein Ratenpunkt entspricht dabei 1.000 Warenbestands-Einheiten. Nicht normierte Testchargen und unbekannte Werte bleiben sichtbar unberechenbar.
+Gemessene und ausdrücklich gekennzeichnete geschätzte Raten je Arbeiter-Arbeitstag werden in Warenbestands-Einheiten umgerechnet. Ein Ratenpunkt entspricht dabei 1.000 Warenbestands-Einheiten. Schätzungen bleiben direkt am Ergebnis erkennbar und erklären ihre Annahmen im Tooltip. Bei fehlender Zeitrate zeigt der Planer trotzdem den belegten Produktionsweg und gegebenenfalls eine dokumentierte Testcharge; eine korrekte Gebäudeanzahl wird daraus nicht vorgetäuscht.
 
 ## Lokale Entwicklung
 

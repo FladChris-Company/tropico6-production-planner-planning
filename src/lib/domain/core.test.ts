@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BUILDINGS, DEFAULT_SETTINGS, GOODS, buildingAvailableInEra } from './data';
-import { calculateScenario, goalRequirements } from './core';
+import { buildGoalPlan, calculateScenario, goalRequirements } from './core';
 import type { Entry, Scenario } from './types';
 
 const entry=(id:string,buildingId:string,count:number,modeId='standard',status:Entry['status']='existing'):Entry=>({id,clusterId:'main',buildingId,modeId,count,efficiency:100,staffing:100,distance:'',status,note:'',rateOverrides:{inputs:{},outputs:{}}});
@@ -57,10 +57,36 @@ describe('Kolonialzeit-Berechnung',()=>{
   });
 
   it('lässt unbekannte Raten sichtbar unberechenbar',()=>{
-    const result=calculate([entry('fish','fishermen-wharf',1,'fish')]);
+    const result=calculate([entry('coconuts','coconut-harvester',1)]);
     expect(result.unknownEntries).toBe(1);
     const diagnostic=result.diagnostics.find(x=>x.title.includes('ohne belastbare Rate'))!;
-    expect(diagnostic.items).toEqual(['1 × Fischereihafen · Arbeitsmodus: Unbekannt']);
+    expect(diagnostic.items).toEqual(['1 × Kokosnussernter · Arbeitsmodus: Standard']);
+  });
+
+  it('zeigt für ein Produktionsziel vorhandene und noch zu bauende Gebäude',()=>{
+    const plan=buildGoalPlan({
+      buildingId:'rum-distillery',
+      count:1,
+      modeId:'dunder',
+      buildings:BUILDINGS,
+      settings:DEFAULT_SETTINGS,
+      entries:[entry('sugar','plantation-sugar',1)],
+      goods:GOODS
+    });
+
+    expect(plan.calculable).toBe(true);
+    expect(plan.rows.map(row=>[row.buildingId,row.recommended,row.existing,row.missing])).toEqual([
+      ['plantation-sugar',2,1,1],
+      ['rum-distillery',1,0,1]
+    ]);
+    expect(plan.additionalWorkers).toBe(12);
+  });
+
+  it('zählt geplante Gebäude bereits gegen die Bauempfehlung',()=>{
+    const plannedRum=entry('rum','rum-distillery',1,'dunder','planned');
+    const plan=buildGoalPlan({buildingId:'rum-distillery',count:1,modeId:'dunder',buildings:BUILDINGS,settings:DEFAULT_SETTINGS,entries:[plannedRum],goods:GOODS});
+
+    expect(plan.rows.find(row=>row.buildingId==='rum-distillery')).toEqual(expect.objectContaining({planned:1,missing:0}));
   });
 
   it('berechnet die kolonialzeitliche Kapazität eines Transportbüros',()=>{

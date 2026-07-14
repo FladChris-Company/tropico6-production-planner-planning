@@ -157,4 +157,23 @@ export function goalRequirements(buildingId:string,count:number,modeId:string,bu
   return rows.reverse();
 }
 
+export function buildGoalPlan({buildingId,count,modeId,buildings,settings,entries,goods={}}:{buildingId:string;count:number;modeId:string;buildings:Building[];settings:Settings;entries:Entry[];goods?:Record<string,{name:string}>}) {
+  const target=buildings.find(building=>building.id===buildingId);
+  const targetMode=target?.modes.find(mode=>mode.id===modeId)??target?.modes[0];
+  const calculable=Boolean(targetMode&&Object.keys(targetMode.outputs).length&&[...Object.values(targetMode.inputs),...Object.values(targetMode.outputs)].every(rate=>rate!=null&&Number.isFinite(Number(rate))));
+  const totals=new Map<string,{existing:number;planned:number}>();
+  for(const entry of entries.filter(entry=>entry.status!=='disabled')) {
+    const value=totals.get(entry.buildingId)??{existing:0,planned:0};
+    value[entry.status==='planned'?'planned':'existing']+=Math.max(0,Number(entry.count)||0);
+    totals.set(entry.buildingId,value);
+  }
+  const rows=goalRequirements(buildingId,count,modeId,buildings,settings,goods).map(row=>{
+    const inventory=totals.get(row.buildingId)??{existing:0,planned:0};
+    const missing=Math.max(0,row.recommended-inventory.existing-inventory.planned);
+    const workers=buildings.find(building=>building.id===row.buildingId)?.workers??0;
+    return {...row,...inventory,missing,additionalWorkers:missing*workers};
+  });
+  return {calculable,rows,additionalWorkers:rows.reduce((sum,row)=>sum+row.additionalWorkers,0)};
+}
+
 export function compareResults(current:ReturnType<typeof calculateScenario>,forecast:ReturnType<typeof calculateScenario>) {return {totalBuildings:forecast.totalBuildings-current.totalBuildings,totalJobs:forecast.totalJobs-current.totalJobs,openJobs:forecast.openJobs-current.openJobs,transportDemand:forecast.transportDemand-current.transportDemand,suppliedChains:forecast.suppliedChains-current.suppliedChains};}

@@ -12,8 +12,8 @@
       "manual/quellen.csv"
     ],
     "colonialBuildingRows": 54,
-    "colonialRecipeRows": 42,
-    "colonialModeRows": 42,
+    "colonialRecipeRows": 46,
+    "colonialModeRows": 46,
     "runtimeBuildings": 69
   },
   "sources": [
@@ -61,6 +61,51 @@
       "type": "Community-Test",
       "reliability": "mittel bis niedrig; Testbedingungen nicht vollständig dokumentiert",
       "retrievedAt": "2026-07-13"
+    },
+    {
+      "id": "reddit_colonial_economy",
+      "title": "Some thoughts on the Colonial Era economy",
+      "url": "https://www.reddit.com/r/tropico/comments/spp3rr/some_thoughts_on_the_colonial_era_economy_and_why/",
+      "usedFor": "Geschätzte Fischproduktion des Fischereihafens und Einfluss der Fahrstrecke",
+      "type": "Community-Beobachtung",
+      "reliability": "mittel bis niedrig; Einzelbeobachtung und stark entfernungsabhängig",
+      "retrievedAt": "2026-07-14"
+    },
+    {
+      "id": "coconut_wiki",
+      "title": "Coconut Harvester – Tropico Wiki",
+      "url": "https://tropico.fandom.com/wiki/Coconut_Harvester",
+      "usedFor": "Produktionsweg und koloniale Verfügbarkeit des Kokosnussernters",
+      "type": "Community-Wiki",
+      "reliability": "mittel bis hoch",
+      "retrievedAt": "2026-07-14"
+    },
+    {
+      "id": "fireworks_wiki",
+      "title": "Fireworks Factory – Tropico Wiki",
+      "url": "https://tropico.fandom.com/wiki/Fireworks_Factory",
+      "usedFor": "Arbeitsmodi und Produktionswege der Feuerwerksfabrik",
+      "type": "Community-Wiki",
+      "reliability": "mittel bis hoch",
+      "retrievedAt": "2026-07-14"
+    },
+    {
+      "id": "fireworks_test",
+      "title": "Fireworks & Balloon factory production results",
+      "url": "https://www.reddit.com/r/tropico6/comments/pgn8nj",
+      "usedFor": "Empirische Testchargen der vier Feuerwerks-Arbeitsmodi",
+      "type": "Community-Test",
+      "reliability": "mittel bis niedrig; Testbedingungen nicht vollständig dokumentiert",
+      "retrievedAt": "2026-07-14"
+    },
+    {
+      "id": "fox_resources",
+      "title": "Fox's guide to resources in Tropico 6",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=1699470418",
+      "usedFor": "Produktionswege für Return to Nature und Warenwerte",
+      "type": "Community-Übersicht",
+      "reliability": "mittel; Sekundärquelle ohne interne Produktionsraten",
+      "retrievedAt": "2026-07-14"
     }
   ],
   "goods": [
@@ -128,6 +173,26 @@
       "id": "coconut",
       "name": "Kokosnüsse",
       "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "books",
+      "name": "Bücher",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1699470418"
+    },
+    {
+      "id": "fireworks",
+      "name": "Feuerwerk",
+      "source": "https://tropico.fandom.com/wiki/Fireworks_Factory"
+    },
+    {
+      "id": "paper",
+      "name": "Papier",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1699470418"
+    },
+    {
+      "id": "pearls",
+      "name": "Perlen",
+      "source": "https://tropico.fandom.com/wiki/Goods_(Tropico_6)"
     },
     {
       "id": "coffee",
@@ -495,15 +560,18 @@
       "kind": "production",
       "stage": 0,
       "dataStatus": "unknown",
-      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "dataNote": "Erntet Kokosnüsse von Palmen in der Umgebung; eine belastbare Zeitrate fehlt.",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://tropico.fandom.com/wiki/Coconut_Harvester",
       "availableFrom": "colonial",
       "modes": [
         {
-          "id": "unknown",
-          "name": "Unbekannt",
+          "id": "standard",
+          "name": "Standard",
           "availableFrom": "colonial",
           "inputs": {},
-          "outputs": {}
+          "outputs": {
+            "coconut": null
+          }
         }
       ]
     },
@@ -517,16 +585,19 @@
       "education": "uneducated",
       "kind": "production",
       "stage": 0,
-      "dataStatus": "unknown",
-      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "dataStatus": "estimated",
+      "dataNote": "Community-Näherung von rund 3 Baumstämmen je Arbeiter-Tick; stark abhängig von Laufweg und Baumbestand.",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://www.reddit.com/r/tropico/comments/spp3rr/some_thoughts_on_the_colonial_era_economy_and_why/",
       "availableFrom": "colonial",
       "modes": [
         {
-          "id": "unknown",
-          "name": "Unbekannt",
+          "id": "standard",
+          "name": "Standard",
           "availableFrom": "colonial",
           "inputs": {},
-          "outputs": {}
+          "outputs": {
+            "logs": 3000
+          }
         }
       ]
     },
@@ -540,16 +611,19 @@
       "education": "uneducated",
       "kind": "production",
       "stage": 0,
-      "dataStatus": "unknown",
-      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "dataStatus": "estimated",
+      "dataNote": "Community-Schätzung bei typischer Fahrstrecke. Die tatsächliche Leistung hängt stark von der Entfernung zum Fischvorkommen ab. Upgrade-Ertrag für Schalentiere nicht enthalten.",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://www.reddit.com/r/tropico/comments/spp3rr/some_thoughts_on_the_colonial_era_economy_and_why/",
       "availableFrom": "colonial",
       "modes": [
         {
-          "id": "unknown",
-          "name": "Unbekannt",
+          "id": "forefathers",
+          "name": "Stil der Vorväter",
           "availableFrom": "colonial",
           "inputs": {},
-          "outputs": {}
+          "outputs": {
+            "fish": 3500
+          }
         }
       ]
     },
@@ -1038,22 +1112,25 @@
       "kind": "production",
       "stage": 0,
       "dataStatus": "unknown",
-      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "dataNote": "Perlenproduktion bestätigt; eine belastbare Zeitrate fehlt.",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://tropico.fandom.com/wiki/Goods_(Tropico_6)",
       "availableFrom": "colonial",
       "modes": [
         {
-          "id": "unknown",
-          "name": "Unbekannt",
+          "id": "standard",
+          "name": "Standard",
           "availableFrom": "colonial",
           "inputs": {},
-          "outputs": {}
+          "outputs": {
+            "pearls": null
+          }
         }
       ]
     },
     {
       "id": "beekeeper",
       "name": "Imkerei",
-      "icon": "•",
+      "icon": "🧊",
       "category": "Nahrung und Rohstoffe",
       "dlc": "return-to-nature",
       "workers": 4,
@@ -1061,15 +1138,18 @@
       "kind": "production",
       "stage": 0,
       "dataStatus": "unknown",
-      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "dataNote": "Zuckerproduktion bestätigt; eine belastbare Zeitrate fehlt.",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1699470418",
       "availableFrom": "colonial",
       "modes": [
         {
-          "id": "unknown",
-          "name": "Unbekannt",
+          "id": "standard",
+          "name": "Standard",
           "availableFrom": "colonial",
           "inputs": {},
-          "outputs": {}
+          "outputs": {
+            "sugar": null
+          }
         }
       ]
     },
@@ -1198,6 +1278,7 @@
       "kind": "production",
       "stage": 1,
       "dataStatus": "unknown",
+      "dataNote": "Community-Test; Mengen sind eine Testcharge, nicht je Arbeiter/Arbeitstag.",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/app/492720/discussions/0/3388420307307354120/",
       "availableFrom": "colonial",
       "modes": [
@@ -1210,6 +1291,52 @@
           },
           "outputs": {
             "toys": null
+          },
+          "referenceBatch": {
+            "inputs": {
+              "logs": 1000
+            },
+            "outputs": {
+              "toys": 1729
+            }
+          }
+        },
+        {
+          "id": "cuddly",
+          "name": "Stoffspielzeug",
+          "availableFrom": "colonial",
+          "inputs": {
+            "cotton": null
+          },
+          "outputs": {
+            "toys": null
+          },
+          "referenceBatch": {
+            "inputs": {
+              "cotton": 1000
+            },
+            "outputs": {
+              "toys": 1443
+            }
+          }
+        },
+        {
+          "id": "rubber",
+          "name": "Gummispielzeug",
+          "availableFrom": "colonial",
+          "inputs": {
+            "rubber": null
+          },
+          "outputs": {
+            "toys": null
+          },
+          "referenceBatch": {
+            "inputs": {
+              "rubber": 936
+            },
+            "outputs": {
+              "toys": 4250
+            }
           }
         }
       ]
@@ -1223,40 +1350,123 @@
       "workers": 4,
       "education": "uneducated",
       "kind": "production",
-      "stage": 0,
+      "stage": 1,
       "dataStatus": "unknown",
-      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "dataNote": "Community-Testcharge ohne Arbeiter-Zeitbasis. Community-Testcharge ohne Arbeiter-Zeitbasis",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://www.reddit.com/r/tropico6/comments/pgn8nj ·  240 von 1000 Mais blieben übrig. ·  367 von 1000 Kohle blieben übrig. ·  721 von 1000 Kohle blieben übrig.",
       "availableFrom": "colonial",
       "modes": [
         {
-          "id": "unknown",
-          "name": "Unbekannt",
+          "id": "coconut-logs",
+          "name": "Kokosnuss-Holz-Feuerwerk",
           "availableFrom": "colonial",
-          "inputs": {},
-          "outputs": {}
+          "inputs": {
+            "coconut": null,
+            "logs": null
+          },
+          "outputs": {
+            "fireworks": null
+          },
+          "referenceBatch": {
+            "inputs": {
+              "coconut": 1000,
+              "logs": 1000
+            },
+            "outputs": {
+              "fireworks": 501
+            }
+          }
+        },
+        {
+          "id": "coconut-corn",
+          "name": "Kokosnuss-Mais-Feuerwerk",
+          "availableFrom": "colonial",
+          "inputs": {
+            "coconut": null,
+            "corn": null
+          },
+          "outputs": {
+            "fireworks": null
+          },
+          "referenceBatch": {
+            "inputs": {
+              "coconut": 1000,
+              "corn": 760
+            },
+            "outputs": {
+              "fireworks": 505
+            }
+          }
+        },
+        {
+          "id": "coal-logs",
+          "name": "Kohle-Holz-Feuerwerk",
+          "availableFrom": "colonial",
+          "inputs": {
+            "coal": null,
+            "logs": null
+          },
+          "outputs": {
+            "fireworks": null
+          },
+          "referenceBatch": {
+            "inputs": {
+              "coal": 633,
+              "logs": 1000
+            },
+            "outputs": {
+              "fireworks": 506
+            }
+          }
+        },
+        {
+          "id": "coal-corn",
+          "name": "Kohle-Mais-Feuerwerk",
+          "availableFrom": "colonial",
+          "inputs": {
+            "coal": null,
+            "corn": null
+          },
+          "outputs": {
+            "fireworks": null
+          },
+          "referenceBatch": {
+            "inputs": {
+              "coal": 279,
+              "corn": 1000
+            },
+            "outputs": {
+              "fireworks": 223
+            }
+          }
         }
       ]
     },
     {
       "id": "charcoal-burner",
       "name": "Köhlerei",
-      "icon": "•",
+      "icon": "⬛",
       "category": "Industrie",
       "dlc": "return-to-nature",
       "workers": 4,
       "education": "uneducated",
       "kind": "production",
-      "stage": 0,
+      "stage": 1,
       "dataStatus": "unknown",
-      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "dataNote": "Wandelt Baumstämme in Kohle um",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) ·  belastbare Mengen und Zeitrate fehlen.",
       "availableFrom": "colonial",
       "modes": [
         {
-          "id": "unknown",
-          "name": "Unbekannt",
+          "id": "standard",
+          "name": "Standard",
           "availableFrom": "colonial",
-          "inputs": {},
-          "outputs": {}
+          "inputs": {
+            "logs": null
+          },
+          "outputs": {
+            "coal": null
+          }
         }
       ]
     },
@@ -1269,17 +1479,45 @@
       "workers": 5,
       "education": "uneducated",
       "kind": "production",
-      "stage": 0,
+      "stage": 1,
       "dataStatus": "unknown",
-      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "dataNote": "Standardmodus Erforschbarer Alternativmodus",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) ·  belastbare Mengen und Zeitrate fehlen.",
       "availableFrom": "colonial",
       "modes": [
         {
-          "id": "unknown",
-          "name": "Unbekannt",
+          "id": "logs",
+          "name": "Baumstämme",
           "availableFrom": "colonial",
-          "inputs": {},
-          "outputs": {}
+          "inputs": {
+            "logs": null
+          },
+          "outputs": {
+            "paper": null
+          }
+        },
+        {
+          "id": "cotton-wool",
+          "name": "Baumwolle und Wolle",
+          "availableFrom": "colonial",
+          "inputs": {
+            "cotton": null,
+            "wool": null
+          },
+          "outputs": {
+            "paper": null
+          }
+        },
+        {
+          "id": "coconut",
+          "name": "Kokosnüsse",
+          "availableFrom": "colonial",
+          "inputs": {
+            "coconut": null
+          },
+          "outputs": {
+            "paper": null
+          }
         }
       ]
     },
@@ -1294,15 +1532,21 @@
       "kind": "production",
       "stage": 2,
       "dataStatus": "unknown",
-      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "dataNote": "Kolonialer Standardmodus",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) ·  der Nur-Papier-Modus wird erst ab Weltkriege erforscht. Belastbare Mengen und Zeitrate fehlen.",
       "availableFrom": "colonial",
       "modes": [
         {
-          "id": "unknown",
-          "name": "Unbekannt",
+          "id": "standard",
+          "name": "Papier und Leder",
           "availableFrom": "colonial",
-          "inputs": {},
-          "outputs": {}
+          "inputs": {
+            "paper": null,
+            "leather": null
+          },
+          "outputs": {
+            "books": null
+          }
         }
       ]
     },

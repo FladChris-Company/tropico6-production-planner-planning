@@ -13,10 +13,12 @@ DATEIEN
   Produktionsvarianten mit Eingangs- und Ausgangsmengen.
   Die 94 Grundspiel-Messwerte stammen aus Community-Messungen und sind
   als Mengen je Arbeiter und Arbeitstag bei 100 % Effizienz erfasst.
-  Vier Spielzeugfabrik-Werte sind separate Testchargen und nicht direkt
-  mit den übrigen Messwerten vergleichbar.
-  Für 18 Produktionsgebäude ohne belastbare öffentliche Messwerte sind
-  ausdrücklich gekennzeichnete Platzhalter vorhanden.
+  Vier Spielzeug- und vier Feuerwerkswerte sind separate Testchargen und
+  nicht direkt mit den übrigen Messwerten vergleichbar.
+  Für koloniale Gebäude ohne belastbare Zeitrate sind bestätigte Ein- und
+  Ausgangswaren erfasst, sofern der Produktionsweg belegt ist.
+  Der Fischereihafen besitzt zusätzlich eine klar gekennzeichnete
+  Community-Schätzung mit dokumentierter Entfernungsabhängigkeit.
 
 - arbeitsmodi.csv
   Aus den bekannten Produktionsvarianten abgeleitete Arbeitsmodi.
@@ -58,6 +60,10 @@ WICHTIGE DATENSTATUS-WERTE
   Empirischer Produktionswert aus einer Community-Messung.
 - measured_community_batch:
   Empirische Testcharge; nicht je Arbeiter und Arbeitstag.
+- verified_relationship:
+  Ein- und Ausgangswaren sind bestätigt; Mengen oder Zeitrate fehlen.
+- estimated_community:
+  Plausible Community-Schätzung mit dokumentierten Annahmen; kein Messwert.
 - unknown_not_publicly_documented:
   Kein belastbarer Wert in den verwendeten öffentlichen Quellen.
 - not_yet_researched:
@@ -81,5 +87,7 @@ VERWENDUNG IN DER ANWENDUNG
   bearbeitet.
 - Gemessene Ratenpunkte je Arbeiter-Arbeitstag werden mit 1.000 in sichtbare
   Warenbestands-Einheiten umgerechnet.
-- Testchargen ohne normierte Zeitbasis und unbekannte Werte bleiben
-  unberechenbar; sie werden nicht als Nullproduktion behandelt.
+- Normierte Schätzwerte sind berechenbar, bleiben aber in Ergebnis und Tooltip
+  als Schätzung sichtbar. Testchargen ohne normierte Zeitbasis bleiben als
+  Umwandlungsverhältnis sichtbar. Produktionswege ohne Zeitrate und unbekannte
+  Werte bleiben unberechenbar; sie werden nicht als Nullproduktion behandelt.
