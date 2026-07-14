@@ -11,12 +11,14 @@
   import { calculateEntryPerformance, calculateScenario, fmt, nextPlayerActions, supplyActionForEntry } from '$lib/domain/core';
   import type { PlayerAction } from '$lib/domain/core';
   import { load, newEntry, save, seed } from '$lib/domain/storage';
+  import { PLANNER_NAVIGATION } from '$lib/domain/navigation';
+  import type { PlannerTab } from '$lib/domain/navigation';
   import type { StorageIssue } from '$lib/domain/storage';
   import type { Database, Entry } from '$lib/domain/types';
 
   let ready = false;
   let db: Database = seed();
-  let tab: 'overview' | 'planning' | 'buildings' | 'backup' = 'overview';
+  let tab: PlannerTab = 'overview';
   let pickerOpen = false;
   let storageIssue: StorageIssue | null = null;
   let storageNotice = '';
@@ -194,10 +196,7 @@
         <label class="era-select"><span class="visually-hidden">Zeitalter</span><select aria-label="Zeitalter" bind:value={project.era} onchange={commit}>{#each ERAS as era}<option value={era.id}>{era.name}</option>{/each}</select></label>
       </div>
       <nav aria-label="Hauptnavigation">
-        <button class:active={tab === 'overview'} onclick={() => (tab = 'overview')}>Übersicht</button>
-        <button class:active={tab === 'planning'} onclick={() => (tab = 'planning')}>Planung</button>
-        <button class:active={tab === 'buildings'} onclick={() => (tab = 'buildings')}>Gebäude</button>
-        <button class:active={tab === 'backup'} onclick={() => (tab = 'backup')}>Sicherung</button>
+        {#each PLANNER_NAVIGATION as item}<button class:active={tab === item.id} onclick={() => (tab = item.id)}>{item.label}</button>{/each}
       </nav>
     </header>
 
@@ -206,7 +205,7 @@
       {#if tab === 'overview'}
         <div class="page-header">
           <div>
-            <h1>Übersicht</h1>
+            <h1>Inselstand</h1>
             <p>Der aktuelle Stand deiner Insel auf einen Blick.</p>
           </div>
         </div>
