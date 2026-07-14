@@ -17,10 +17,12 @@ Produktiv nutzbare Svelte-Anwendung für die Kolonialzeit.
 - belegte koloniale Produktionswege und Testchargen auch ohne erfundene Zeitrate
 - Produktions-, Verbrauchs-, Reserve- und Exportbilanz
 - theoretische und erwartete Produktion mit sichtbaren Annahmen
-- Effizienz, Besetzung, Arbeitsmodi und individuelle Raten
+- aufklappbare Gebäudedetails für Status, Besetzung, Cluster, Entfernung, individuelle Raten, externe Versorgung und Notizen
+- belegte koloniale Verbesserungen mit Auswirkungen auf Effizienz und Arbeitsplätze
 - Arbeitsplätze und qualitative Transportbewertung
 - rückwärts aufgelöste Bauempfehlung für berechenbare Produktionsketten
 - eigener Produktionsziel-Workflow mit gebaut/geplant/noch bauen und zusätzlichem Arbeiterbedarf
+- versionierter Insel-Export und validierter Import ohne Überschreiben vorhandener Inseln
 - priorisierte Diagnosen und erklärende Tooltips
 - automatisierte Fachtests, Typprüfung und Produktions-Build
 
@@ -29,13 +31,12 @@ Produktiv nutzbare Svelte-Anwendung für die Kolonialzeit.
 - ausschließlich Kolonialzeit
 - keine exakte Verkehrs-, Anwesenheits- oder Finanzsimulation
 - keine zentrale Speicherung und keine Benutzerkonten
-- JSON-Import und -Export sind in der aktuellen Svelte-Oberfläche noch nicht verfügbar
 - DLC-Raten ohne belastbare Quelle werden nicht erfunden; Nutzer können sie selbst kalibrieren
 - Bevölkerung und allgemeine Bedürfnisversorgung bleiben ein späteres Modul
 
 ## Nächste fachliche Arbeiten
 
 - unbekannte Produktionsraten durch reproduzierbare Spielmessungen verifizieren
-- weitere Upgrades und Arbeitsmodi mit Quellenstatus ergänzen
+- weitere Upgrades und Arbeitsmodi ergänzen, sobald belastbare Quellen vorliegen
 - Transportmodell mit Spielbeobachtungen kalibrieren
 - rechtlich nutzbare Gebäude- und Warenillustrationen ergänzen

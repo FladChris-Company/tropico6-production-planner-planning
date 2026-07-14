@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BUILDINGS, DEFAULT_SETTINGS, GOODS, buildingAvailableInEra } from './data';
-import { buildGoalPlan, calculateScenario, goalRequirements } from './core';
+import { buildGoalPlan, calculateEntryPerformance, calculateScenario, goalRequirements } from './core';
 import type { Entry, Scenario } from './types';
 
 const entry=(id:string,buildingId:string,count:number,modeId='standard',status:Entry['status']='existing'):Entry=>({id,clusterId:'main',buildingId,modeId,count,efficiency:100,staffing:100,distance:'',status,note:'',rateOverrides:{inputs:{},outputs:{}}});
@@ -61,6 +61,25 @@ describe('Kolonialzeit-Berechnung',()=>{
     expect(result.unknownEntries).toBe(1);
     const diagnostic=result.diagnostics.find(x=>x.title.includes('ohne belastbare Rate'))!;
     expect(diagnostic.items).toEqual(['1 × Kokosnussernter · Arbeitsmodus: Standard']);
+  });
+
+  it('berücksichtigt ausgewählte Verbesserungen bei Leistung und Arbeitsplätzen',()=>{
+    const building={
+      ...BUILDINGS.find((item)=>item.id==='plantation-sugar')!,
+      workers:4,
+      upgrades:[
+        {id:'efficiency',name:'Effizienz',effectType:'efficiency' as const,effectValue:15,effectUnit:'percent' as const,description:'+15 % Effizienz',dataStatus:'verified' as const,source:'manual'},
+        {id:'workers',name:'Arbeitsplätze',effectType:'workers' as const,effectValue:2,effectUnit:'workers' as const,description:'+2 Arbeitsplätze',dataStatus:'verified' as const,source:'manual'}
+      ]
+    };
+    const upgraded=entry('sugar',building.id,1);
+    (upgraded as Entry & {upgradeIds:string[]}).upgradeIds=['efficiency','workers'];
+
+    const performance=calculateEntryPerformance({entry:upgraded,building,settings:DEFAULT_SETTINGS});
+    const result=calculateScenario({scenario:scenario([upgraded]),buildings:[building],goods:GOODS,settings:DEFAULT_SETTINGS});
+
+    expect(performance.outputs.sugar).toBe(10_350);
+    expect(result.totalJobs).toBe(6);
   });
 
   it('zeigt für ein Produktionsziel vorhandene und noch zu bauende Gebäude',()=>{

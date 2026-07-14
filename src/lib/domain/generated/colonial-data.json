@@ -9,11 +9,13 @@
       "manual/produktionsrezepte.csv",
       "manual/waren.csv",
       "manual/arbeitsmodi.csv",
-      "manual/quellen.csv"
+      "manual/quellen.csv",
+      "manual/verbesserungen.csv"
     ],
     "colonialBuildingRows": 54,
     "colonialRecipeRows": 46,
     "colonialModeRows": 46,
+    "colonialUpgradeRows": 3,
     "runtimeBuildings": 69
   },
   "sources": [
@@ -364,6 +366,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -386,6 +389,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -408,6 +412,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -430,6 +435,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -452,6 +458,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -474,6 +481,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -496,6 +504,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -518,6 +527,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -540,6 +550,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -563,6 +574,7 @@
       "dataNote": "Erntet Kokosnüsse von Palmen in der Umgebung; eine belastbare Zeitrate fehlt.",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://tropico.fandom.com/wiki/Coconut_Harvester",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -589,6 +601,7 @@
       "dataNote": "Community-Näherung von rund 3 Baumstämmen je Arbeiter-Tick; stark abhängig von Laufweg und Baumbestand.",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://www.reddit.com/r/tropico/comments/spp3rr/some_thoughts_on_the_colonial_era_economy_and_why/",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -615,6 +628,7 @@
       "dataNote": "Community-Schätzung bei typischer Fahrstrecke. Die tatsächliche Leistung hängt stark von der Entfernung zum Fischvorkommen ab. Upgrade-Ertrag für Schalentiere nicht enthalten.",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://www.reddit.com/r/tropico/comments/spp3rr/some_thoughts_on_the_colonial_era_economy_and_why/",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "forefathers",
@@ -640,6 +654,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -665,6 +680,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -690,6 +706,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -715,6 +732,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -740,6 +758,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -765,6 +784,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -790,6 +810,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -815,6 +836,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -840,6 +862,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -865,6 +888,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -887,6 +911,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -913,6 +938,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -939,6 +965,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -964,6 +991,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -989,6 +1017,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1014,6 +1043,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1039,6 +1069,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1064,6 +1095,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1089,6 +1121,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1115,6 +1148,7 @@
       "dataNote": "Perlenproduktion bestätigt; eine belastbare Zeitrate fehlt.",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://tropico.fandom.com/wiki/Goods_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1141,6 +1175,7 @@
       "dataNote": "Zuckerproduktion bestätigt; eine belastbare Zeitrate fehlt.",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1699470418",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1166,6 +1201,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "normal",
@@ -1204,6 +1240,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "normal",
@@ -1242,6 +1279,7 @@
       "dataStatus": "measured",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "normal",
@@ -1281,6 +1319,38 @@
       "dataNote": "Community-Test; Mengen sind eine Testcharge, nicht je Arbeiter/Arbeitstag.",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/app/492720/discussions/0/3388420307307354120/",
       "availableFrom": "colonial",
+      "upgrades": [
+        {
+          "id": "taas",
+          "name": "TAAS – Toys As A Service",
+          "effectType": "efficiency",
+          "effectValue": 15,
+          "effectUnit": "percent",
+          "description": "+15 % Gebäudeeffizienz",
+          "dataStatus": "verified",
+          "source": "https://tropico.fandom.com/wiki/Toy_Workshop"
+        },
+        {
+          "id": "snug-workspace",
+          "name": "Bequemer Arbeitsplatz",
+          "effectType": "workers",
+          "effectValue": 2,
+          "effectUnit": "workers",
+          "description": "+2 Arbeitsplätze",
+          "dataStatus": "verified",
+          "source": "https://tropico.fandom.com/wiki/Toy_Workshop"
+        },
+        {
+          "id": "set-a-sign",
+          "name": "Schild aufstellen",
+          "effectType": "information",
+          "effectValue": -50,
+          "effectUnit": "percent",
+          "description": "Verschmutzung um 50 % reduziert",
+          "dataStatus": "verified",
+          "source": "https://tropico.fandom.com/wiki/Toy_Workshop"
+        }
+      ],
       "modes": [
         {
           "id": "wooden",
@@ -1355,6 +1425,7 @@
       "dataNote": "Community-Testcharge ohne Arbeiter-Zeitbasis. Community-Testcharge ohne Arbeiter-Zeitbasis",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://www.reddit.com/r/tropico6/comments/pgn8nj ·  240 von 1000 Mais blieben übrig. ·  367 von 1000 Kohle blieben übrig. ·  721 von 1000 Kohle blieben übrig.",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "coconut-logs",
@@ -1456,6 +1527,7 @@
       "dataNote": "Wandelt Baumstämme in Kohle um",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) ·  belastbare Mengen und Zeitrate fehlen.",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1484,6 +1556,7 @@
       "dataNote": "Standardmodus Erforschbarer Alternativmodus",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) ·  belastbare Mengen und Zeitrate fehlen.",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "logs",
@@ -1535,6 +1608,7 @@
       "dataNote": "Kolonialer Standardmodus",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) ·  der Nur-Papier-Modus wird erst ab Weltkriege erforscht. Belastbare Mengen und Zeitrate fehlen.",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1563,6 +1637,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1585,6 +1660,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1607,6 +1683,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1629,6 +1706,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1651,6 +1729,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1673,6 +1752,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1695,6 +1775,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1717,6 +1798,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1739,6 +1821,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1761,6 +1844,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1783,6 +1867,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1805,6 +1890,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1827,6 +1913,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1849,6 +1936,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1871,6 +1959,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1893,6 +1982,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1915,6 +2005,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1937,6 +2028,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1959,6 +2051,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -1981,6 +2074,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -2003,6 +2097,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -2025,6 +2120,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -2047,6 +2143,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -2069,6 +2166,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -2091,6 +2189,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -2113,6 +2212,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -2135,6 +2235,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",
@@ -2157,6 +2258,7 @@
       "dataStatus": "verified",
       "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
       "availableFrom": "colonial",
+      "upgrades": [],
       "modes": [
         {
           "id": "standard",

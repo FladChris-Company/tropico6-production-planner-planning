@@ -80,7 +80,8 @@ EINSCHRÄNKUNGEN
 VERWENDUNG IN DER ANWENDUNG
 - Dieser Ordner ist die gepflegte Wissensquelle für die Tropico-6-Stammdaten.
 - Der Kolonialzeit-MVP verwendet derzeit gebaeude.csv, produktionsrezepte.csv,
-  waren.csv, arbeitsmodi.csv und quellen.csv für die Laufzeitdaten.
+  waren.csv, arbeitsmodi.csv, verbesserungen.csv und quellen.csv für die
+  Laufzeitdaten.
 - Änderungen werden mit `npm run data:generate` in die generierte JSON-Datei
   übertragen und mit `npm run data:check` auf Aktualität geprüft.
 - Die Datei src/lib/domain/generated/colonial-data.json wird nicht manuell

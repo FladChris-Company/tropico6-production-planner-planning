@@ -184,19 +184,36 @@ function createBuilding(building, recipes, goodIds, errors, overrides = {}) {
     ...(dataNote ? { dataNote } : {}),
     source: sourceFor(building, recipes),
     availableFrom: 'colonial',
+    upgrades: building.upgrades ?? [],
     modes
   };
 }
 
-export function generateColonialData({ buildingsCsv, recipesCsv, goodsCsv, modesCsv = '', sourcesCsv = '' }) {
+export function generateColonialData({ buildingsCsv, recipesCsv, goodsCsv, modesCsv = '', sourcesCsv = '', upgradesCsv = '' }) {
   const allBuildings = parseSemicolonCsv(buildingsCsv);
   const allRecipes = parseSemicolonCsv(recipesCsv);
   const allGoods = parseSemicolonCsv(goodsCsv);
   const allModes = parseSemicolonCsv(modesCsv);
   const allSources = parseSemicolonCsv(sourcesCsv);
+  const allUpgrades = parseSemicolonCsv(upgradesCsv);
   const errors = [];
   const colonialRows = allBuildings.filter((building) => building.era === 'Kolonialzeit');
   const colonialIds = new Set(colonialRows.map((building) => building.building_id));
+  const colonialUpgrades = allUpgrades.filter((item) => colonialIds.has(item.building_id) && item.is_placeholder !== 'Ja' && (!item.era_required || item.era_required === 'Kolonialzeit'));
+  const upgradesByBuilding = new Map();
+  for (const upgrade of colonialUpgrades) {
+    if (!upgradesByBuilding.has(upgrade.building_id)) upgradesByBuilding.set(upgrade.building_id, []);
+    upgradesByBuilding.get(upgrade.building_id).push({
+      id: slug(upgrade.upgrade_id),
+      name: upgrade.upgrade_name_de,
+      effectType: upgrade.effect_type === 'Effizienz' ? 'efficiency' : upgrade.effect_type === 'Arbeitsplätze' ? 'workers' : 'information',
+      effectValue: numberOrZero(upgrade.effect_value),
+      effectUnit: upgrade.effect_unit === 'Prozent' ? 'percent' : upgrade.effect_unit === 'Arbeitsplätze' ? 'workers' : slug(upgrade.effect_unit),
+      description: upgrade.effect_description,
+      dataStatus: upgrade.data_status?.startsWith('verified') ? 'verified' : 'unknown',
+      source: upgrade.source_url
+    });
+  }
   const allModesById = new Map(allModes.map((mode) => [mode.mode_id, mode]));
   const colonialModes = allModes.filter((mode) => colonialIds.has(mode.building_id) && mode.era === 'Kolonialzeit');
   const modesById = new Map(colonialModes.map((mode) => [mode.mode_id, mode]));
@@ -215,7 +232,8 @@ export function generateColonialData({ buildingsCsv, recipesCsv, goodsCsv, modes
     if (!recipesByBuilding.has(recipe.building_id)) recipesByBuilding.set(recipe.building_id, []);
     recipesByBuilding.get(recipe.building_id).push(recipe);
   }
-  const buildings = colonialRows.flatMap((building) => {
+  const buildings = colonialRows.flatMap((sourceBuilding) => {
+    const building = { ...sourceBuilding, upgrades: upgradesByBuilding.get(sourceBuilding.building_id) ?? [] };
     let recipes = recipesByBuilding.get(building.building_id) ?? [];
     if (building.building_id === 'mine') recipes = recipes.filter((recipe) => ['mine_coal', 'mine_iron', 'mine_gold'].includes(recipe.recipe_id));
     return ['plantation', 'ranch', 'mine'].includes(building.building_id)
@@ -233,10 +251,11 @@ export function generateColonialData({ buildingsCsv, recipesCsv, goodsCsv, modes
     rateUnit: 'inventory-units-per-worker-workday',
     rateScale: RATE_SCALE,
     source: {
-      files: ['manual/gebaeude.csv', 'manual/produktionsrezepte.csv', 'manual/waren.csv', 'manual/arbeitsmodi.csv', 'manual/quellen.csv'],
+      files: ['manual/gebaeude.csv', 'manual/produktionsrezepte.csv', 'manual/waren.csv', 'manual/arbeitsmodi.csv', 'manual/quellen.csv', 'manual/verbesserungen.csv'],
       colonialBuildingRows: colonialRows.length,
       colonialRecipeRows: colonialRecipes.length,
       colonialModeRows: colonialModes.length,
+      colonialUpgradeRows: colonialUpgrades.length,
       runtimeBuildings: buildings.length
     },
     sources: allSources.map((source) => ({

@@ -5,14 +5,15 @@ import { generateColonialData, serializeColonialData } from './lib/colonial-data
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outputPath = resolve(root, 'src/lib/domain/generated/colonial-data.json');
-const [buildingsCsv, recipesCsv, goodsCsv, modesCsv, sourcesCsv] = await Promise.all([
+const [buildingsCsv, recipesCsv, goodsCsv, modesCsv, sourcesCsv, upgradesCsv] = await Promise.all([
   readFile(resolve(root, 'manual/gebaeude.csv'), 'utf8'),
   readFile(resolve(root, 'manual/produktionsrezepte.csv'), 'utf8'),
   readFile(resolve(root, 'manual/waren.csv'), 'utf8'),
   readFile(resolve(root, 'manual/arbeitsmodi.csv'), 'utf8'),
-  readFile(resolve(root, 'manual/quellen.csv'), 'utf8')
+  readFile(resolve(root, 'manual/quellen.csv'), 'utf8'),
+  readFile(resolve(root, 'manual/verbesserungen.csv'), 'utf8')
 ]);
-const data = generateColonialData({ buildingsCsv, recipesCsv, goodsCsv, modesCsv, sourcesCsv });
+const data = generateColonialData({ buildingsCsv, recipesCsv, goodsCsv, modesCsv, sourcesCsv, upgradesCsv });
 
 if (data.validation.errors.length) {
   console.error(data.validation.errors.join('\n'));

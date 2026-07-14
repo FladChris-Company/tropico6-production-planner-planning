@@ -20,21 +20,31 @@ function rates(entry:Prepared['entry'], mode:Building['modes'][number]) {
   return {inputs:normalize(mode.inputs,entry.rateOverrides?.inputs ?? {}),outputs:normalize(mode.outputs,entry.rateOverrides?.outputs ?? {})};
 }
 
+function upgradeEffects(entry: Entry, building: Building) {
+  const selected = new Set(entry.upgradeIds ?? []);
+  const upgrades = (building.upgrades ?? []).filter((upgrade) => selected.has(upgrade.id));
+  return {
+    workers: building.workers + upgrades.filter((upgrade) => upgrade.effectType === 'workers').reduce((sum, upgrade) => sum + upgrade.effectValue, 0),
+    efficiency: Number(entry.efficiency) + upgrades.filter((upgrade) => upgrade.effectType === 'efficiency').reduce((sum, upgrade) => sum + upgrade.effectValue, 0)
+  };
+}
+
 export function calculateEntryPerformance({entry,building,era='colonial',settings}:{entry:Entry;building:Building;era?:Era;settings:Settings}) {
   const mode=building.modes.find(item=>item.id===entry.modeId)??building.modes[0];
   const normalized=rates(entry,mode);
   const calculable=Object.keys(normalized.outputs).length>0&&[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(value=>value!=null&&Number.isFinite(Number(value)));
   const count=Math.max(0,Number(entry.count)||0);
-  const efficiency=clamp(entry.efficiency,0,500)/100;
-  const factor=count*building.workers*efficiency;
+  const effects=upgradeEffects(entry,building);
+  const efficiency=clamp(effects.efficiency,0,500)/100;
+  const factor=count*effects.workers*efficiency;
   const scale=(source:Record<string,number|null>)=>Object.fromEntries(Object.entries(source).map(([id,value])=>[id,Number(value)*factor])) as Rates;
   const inputs=calculable?scale(normalized.inputs):{};
   const outputs=calculable?scale(normalized.outputs):{};
   const staffing=clamp(entry.staffing,0,100)/100;
   const transportCapacity=building.kind==='teamster'
-    ? count*building.workers*staffing*LOAD_PER_TRIP_BY_ERA[era]*efficiency*(TEAMSTER_MODE_FACTORS[mode.id]??1)*Math.max(0,settings.transportTripsPerWorker)
+    ? count*effects.workers*staffing*LOAD_PER_TRIP_BY_ERA[era]*efficiency*(TEAMSTER_MODE_FACTORS[mode.id]??1)*Math.max(0,settings.transportTripsPerWorker)
     : 0;
-  return {mode,calculable,inputs,outputs,transportCapacity,loadPerTrip:LOAD_PER_TRIP_BY_ERA[era],modeFactor:TEAMSTER_MODE_FACTORS[mode.id]??1};
+  return {mode,calculable,inputs,outputs,transportCapacity,loadPerTrip:LOAD_PER_TRIP_BY_ERA[era],modeFactor:TEAMSTER_MODE_FACTORS[mode.id]??1,effectiveWorkers:effects.workers,effectiveEfficiency:efficiency*100};
 }
 
 function bestSource(buildings:Building[], goodId:string) {
@@ -67,21 +77,22 @@ export function calculateScenario({scenario,buildings,goods,settings,era='coloni
   for(const entry of scenario.entries.filter(e=>e.status!=='disabled'&&Number(e.count)>0)) {
     const building=buildingMap.get(entry.buildingId); if(!building) continue;
     const mode=building.modes.find(m=>m.id===entry.modeId)??building.modes[0];
-    const count=Math.max(0,Number(entry.count)||0), efficiency=clamp(entry.efficiency,0,500)/100, staffing=clamp(entry.staffing,0,100)/100;
+    const effects=upgradeEffects(entry,building);
+    const count=Math.max(0,Number(entry.count)||0), efficiency=clamp(effects.efficiency,0,500)/100, staffing=clamp(entry.staffing,0,100)/100;
     const normalized=rates(entry,mode) as {inputs:Rates;outputs:Rates};
     const calculable=Object.keys(normalized.outputs).length>0&&[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(v=>v!=null&&Number.isFinite(Number(v)));
     const performance=calculateEntryPerformance({entry,building,era,settings});
     totalBuildings+=count; if(entry.status==='planned') plannedBuildings+=count;
-    totalJobs+=count*building.workers; filledJobs+=count*building.workers*staffing;
-    educationJobs[building.education]=(educationJobs[building.education]??0)+count*building.workers;
-    educationFilled[building.education]=(educationFilled[building.education]??0)+count*building.workers*staffing;
+    totalJobs+=count*effects.workers; filledJobs+=count*effects.workers*staffing;
+    educationJobs[building.education]=(educationJobs[building.education]??0)+count*effects.workers;
+    educationFilled[building.education]=(educationFilled[building.education]??0)+count*effects.workers*staffing;
     if(building.kind==='teamster') {
       teamsterOffices+=count;
       transportCapacity+=performance.transportCapacity;
     }
     if(building.kind==='production'&&performance.calculable) transportDemand+=Object.values(performance.outputs).reduce((sum,value)=>sum+value,0);
     if(!calculable&&building.kind==='production') unknownEntries+=count;
-    prepared.push({entry,building,mode,count,theoreticalFactor:count*building.workers*efficiency,expectedFactor:count*building.workers*efficiency*staffing*settings.worktimeFactor*settings.logisticsFactor,rates:normalized,calculable});
+    prepared.push({entry,building,mode,count,theoreticalFactor:count*effects.workers*efficiency,expectedFactor:count*effects.workers*efficiency*staffing*settings.worktimeFactor*settings.logisticsFactor,rates:normalized,calculable});
   }
 
   const entryResults: {entryId:string;buildingId:string;utilization:number;inputs:Rates;outputs:Rates;missing:Rates;calculable:boolean;theoreticalOutputs:Rates}[]=[];

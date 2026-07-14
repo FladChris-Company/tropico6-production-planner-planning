@@ -17,7 +17,7 @@ Work in Progress
 - Grundspiel und koloniale DLC-Produktionsgebäude
 - zielorientierte Rückwärtsplanung für berechenbare Kolonialketten
 - lokale Speicherung im Browser
-- Import und Export als geplanter Sicherungsschritt
+- Inseln als versionierte JSON-Sicherung exportieren und sicher wieder importieren
 - automatische Prüfung vor jeder Veröffentlichung
 
 ## Produktarchitektur
@@ -46,8 +46,11 @@ Der Planer soll nicht nur Zahlen zeigen, sondern typische Fragen während einer 
 - schneller Gebäudeeintrag mit Anzahl und Cluster
 - Vorlagen für Rum, Bretter und Leder
 - Gebäude hinzufügen, duplizieren, deaktivieren und entfernen
-- Effizienz, Personalbesetzung und Arbeitsmodi
-- optionale Entfernung als verständliche Kategorie
+- Grundeffizienz, Personalbesetzung und Arbeitsmodi
+- gebaut, geplant und deaktiviert direkt am Gebäude
+- aufklappbare Details für Cluster, Entfernung, Notizen und eigene Produktionsraten
+- externe Warenversorgung direkt an den betroffenen Fabrikeingängen
+- belegte koloniale Verbesserungen aus der manuellen Wissensquelle
 - unveränderlicher Ist-Stand
 - unabhängige Ausbauprognosen
 - Vergleich zwischen Ist-Stand und Prognose
@@ -63,16 +66,16 @@ Der Planer soll nicht nur Zahlen zeigen, sondern typische Fragen während einer 
 - Arbeitsplätze und offene Stellen
 - Transportbüros und Transporteinschätzung
 - DLC-Filter für koloniale Produktionsinhalte
-- JSON-Import und -Export (geplant)
+- JSON-Import und -Export mit Format-, Schema- und Gebäudedatenprüfung
 - mobile Darstellung und Offline-Grundlage
 
 ## Speicherung
 
-Inseln und Prognosen werden aktuell automatisch im lokalen Speicher des jeweiligen Browsers gespeichert. Sie sind nicht öffentlich sichtbar und werden nicht an einen Server übertragen. Eine Sicherung per JSON-Export ist geplant, aber in der Minimaloberfläche noch nicht verfügbar.
+Inseln und Prognosen werden automatisch im lokalen Speicher des jeweiligen Browsers gespeichert. Über „Sicherung“ kann die aktive Insel als JSON-Datei gespeichert und später wieder importiert werden. Ein Import legt eine eigene Insel an und überschreibt den vorhandenen Stand nicht. Die Daten werden dabei nur auf dem Gerät verarbeitet und nicht an einen Server übertragen.
 
 ## Spieldaten für den Kolonialzeit-MVP
 
-Die CSV-Dateien unter `manual/` sind die gepflegte Wissensquelle für Gebäude, Waren, Produktionsrezepte, Arbeitsmodi und Quellen. Ein validierter Generator erzeugt daraus die von der Anwendung verwendeten Kolonialdaten in `src/lib/domain/generated/colonial-data.json`.
+Die CSV-Dateien unter `manual/` sind die gepflegte Wissensquelle für Gebäude, Waren, Produktionsrezepte, Arbeitsmodi, Verbesserungen und Quellen. Ein validierter Generator erzeugt daraus die von der Anwendung verwendeten Kolonialdaten in `src/lib/domain/generated/colonial-data.json`.
 
 Gemessene und ausdrücklich gekennzeichnete geschätzte Raten je Arbeiter-Arbeitstag werden in Warenbestands-Einheiten umgerechnet. Ein Ratenpunkt entspricht dabei 1.000 Warenbestands-Einheiten. Schätzungen bleiben direkt am Ergebnis erkennbar und erklären ihre Annahmen im Tooltip. Bei fehlender Zeitrate zeigt der Planer trotzdem den belegten Produktionsweg und gegebenenfalls eine dokumentierte Testcharge; eine korrekte Gebäudeanzahl wird daraus nicht vorgetäuscht.
 

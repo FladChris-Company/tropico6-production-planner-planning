@@ -26,6 +26,9 @@ plantation_rubber;plantation;Gummi;Weltkriege;measured_community;https://example
 const sourcesCsv = `source_id;title;url;used_for;source_type;reliability;retrieved_at
 rates;Messwerte;https://example.test/rates;Produktionsraten;Community-Messung;mittel;2026-07-13`;
 
+const upgradesCsv = `building_id;building_name_de;building_name_en;upgrade_id;upgrade_name_de;upgrade_name_en;upgrade_cost_usd;era_required;effect_type;effect_value;effect_unit;effect_description;data_status;is_placeholder;source_url
+toy_workshop;Spielzeugfabrik;Toy Workshop;taas;TAAS – Toys As A Service;TAAS – Toys As A Service;;;Effizienz;15;Prozent;+15 % Gebäudeeffizienz;verified_wiki_individual_page;Nein;https://example.test/toys`;
+
 describe('Kolonialdaten-Generator', () => {
   it('erzeugt aus einer Plantagenvariante eine skalierte Laufzeitrate', async () => {
     const { generateColonialData } = await loadGenerator();
@@ -59,6 +62,16 @@ describe('Kolonialdaten-Generator', () => {
     expect(result.validation.errors).toContain('Negative Menge output in plantation_sugar');
   });
 
+  it('übernimmt dokumentierte Verbesserungen kolonialer Gebäude', async () => {
+    const { generateColonialData } = await loadGenerator();
+    const buildingsWithToyWorkshop = `${buildingsCsv}\ntoy_workshop;Spielzeugfabrik;Toy Workshop;Kolonialzeit;Industrie;The Llama of Wall Street;Ja;Nein;4;Ungebildet;verified_wiki_table;https://example.test/toys`;
+    const result = generateColonialData({ buildingsCsv: buildingsWithToyWorkshop, recipesCsv, goodsCsv, modesCsv, sourcesCsv, upgradesCsv });
+
+    expect(result.buildings.find((building) => building.id === 'toy-workshop').upgrades).toEqual([
+      expect.objectContaining({ id: 'taas', name: 'TAAS – Toys As A Service', effectType: 'efficiency', effectValue: 15, effectUnit: 'percent' })
+    ]);
+  });
+
   it('übernimmt eine Community-Schätzung als berechenbaren Schätzwert', async () => {
     const { generateColonialData } = await loadGenerator();
     const estimatedBuildings = `${buildingsCsv}\nfishermens_wharf;Fischereihafen;Fishermen's Wharf;Kolonialzeit;Nahrung und Rohstoffe;Grundspiel;Ja;Nein;5;Ungebildet;verified_wiki_table;https://example.test/wharf`;
@@ -77,32 +90,35 @@ describe('Kolonialdaten-Generator', () => {
 
   it('verarbeitet die vollständige manuelle Wissensquelle ohne Validierungsfehler', async () => {
     const { generateColonialData } = await loadGenerator();
-    const [realBuildings, realRecipes, realGoods, realModes, realSources] = await Promise.all([
+    const [realBuildings, realRecipes, realGoods, realModes, realSources, realUpgrades] = await Promise.all([
       readFile(new URL('../manual/gebaeude.csv', import.meta.url), 'utf8'),
       readFile(new URL('../manual/produktionsrezepte.csv', import.meta.url), 'utf8'),
       readFile(new URL('../manual/waren.csv', import.meta.url), 'utf8'),
       readFile(new URL('../manual/arbeitsmodi.csv', import.meta.url), 'utf8'),
-      readFile(new URL('../manual/quellen.csv', import.meta.url), 'utf8')
+      readFile(new URL('../manual/quellen.csv', import.meta.url), 'utf8'),
+      readFile(new URL('../manual/verbesserungen.csv', import.meta.url), 'utf8')
     ]);
-    const result = generateColonialData({ buildingsCsv: realBuildings, recipesCsv: realRecipes, goodsCsv: realGoods, modesCsv: realModes, sourcesCsv: realSources });
+    const result = generateColonialData({ buildingsCsv: realBuildings, recipesCsv: realRecipes, goodsCsv: realGoods, modesCsv: realModes, sourcesCsv: realSources, upgradesCsv: realUpgrades });
 
     expect(result.validation.errors).toEqual([]);
     expect(result.source.colonialBuildingRows).toBe(54);
     expect(result.source.colonialRecipeRows).toBe(46);
     expect(result.source.colonialModeRows).toBe(46);
+    expect(result.source.colonialUpgradeRows).toBe(3);
     expect(result.sources).toHaveLength(10);
   });
 
   it('liefert koloniale Produktionswege und bewahrt Testchargen ohne falsche Zeitrate', async () => {
     const { generateColonialData } = await loadGenerator();
-    const [realBuildings, realRecipes, realGoods, realModes, realSources] = await Promise.all([
+    const [realBuildings, realRecipes, realGoods, realModes, realSources, realUpgrades] = await Promise.all([
       readFile(new URL('../manual/gebaeude.csv', import.meta.url), 'utf8'),
       readFile(new URL('../manual/produktionsrezepte.csv', import.meta.url), 'utf8'),
       readFile(new URL('../manual/waren.csv', import.meta.url), 'utf8'),
       readFile(new URL('../manual/arbeitsmodi.csv', import.meta.url), 'utf8'),
-      readFile(new URL('../manual/quellen.csv', import.meta.url), 'utf8')
+      readFile(new URL('../manual/quellen.csv', import.meta.url), 'utf8'),
+      readFile(new URL('../manual/verbesserungen.csv', import.meta.url), 'utf8')
     ]);
-    const result = generateColonialData({ buildingsCsv: realBuildings, recipesCsv: realRecipes, goodsCsv: realGoods, modesCsv: realModes, sourcesCsv: realSources });
+    const result = generateColonialData({ buildingsCsv: realBuildings, recipesCsv: realRecipes, goodsCsv: realGoods, modesCsv: realModes, sourcesCsv: realSources, upgradesCsv: realUpgrades });
 
     expect(result.buildings).toHaveLength(69);
     expect(result.buildings.filter((building) => building.id.startsWith('mine-')).map((building) => building.id)).toEqual(['mine-coal', 'mine-iron', 'mine-gold']);
@@ -114,6 +130,11 @@ describe('Kolonialdaten-Generator', () => {
     expect(result.buildings.find((building) => building.id === 'ranch-cattle').modes[0].outputs).toEqual({ meat: 1500, hides: 2000 });
     expect(result.buildings.find((building) => building.id === 'toy-workshop')).toEqual(expect.objectContaining({
       dataStatus: 'unknown',
+      upgrades: expect.arrayContaining([
+        expect.objectContaining({ id: 'taas', effectType: 'efficiency', effectValue: 15 }),
+        expect.objectContaining({ id: 'snug-workspace', effectType: 'workers', effectValue: 2 }),
+        expect.objectContaining({ id: 'set-a-sign', effectType: 'information' })
+      ]),
       modes: [
         expect.objectContaining({ inputs: { logs: null }, outputs: { toys: null }, referenceBatch: { inputs: { logs: 1000 }, outputs: { toys: 1729 } } }),
         expect.objectContaining({ inputs: { cotton: null }, outputs: { toys: null } }),

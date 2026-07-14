@@ -15,6 +15,17 @@ export interface Mode {
   };
 }
 
+export interface Upgrade {
+  id: string;
+  name: string;
+  effectType: 'efficiency' | 'workers' | 'information';
+  effectValue: number;
+  effectUnit: 'percent' | 'workers' | string;
+  description: string;
+  dataStatus: DataStatus;
+  source: string;
+}
+
 export interface Building {
   id: string;
   name: string;
@@ -29,6 +40,7 @@ export interface Building {
   dataNote?: string;
   source: string;
   availableFrom?: Era;
+  upgrades?: Upgrade[];
   modes: Mode[];
 }
 
@@ -44,6 +56,7 @@ export interface Entry {
   status: EntryStatus;
   note: string;
   rateOverrides: { inputs: Record<string, number | ''>; outputs: Record<string, number | ''> };
+  upgradeIds?: string[];
 }
 
 export interface Scenario {
