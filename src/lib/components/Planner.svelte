@@ -13,6 +13,8 @@
   import { load, newEntry, save, seed } from '$lib/domain/storage';
   import { PLANNER_NAVIGATION } from '$lib/domain/navigation';
   import type { PlannerTab } from '$lib/domain/navigation';
+  import { removeEntry, restoreEntry } from '$lib/domain/entries';
+  import type { RemovedEntry } from '$lib/domain/entries';
   import type { StorageIssue } from '$lib/domain/storage';
   import type { Database, Entry } from '$lib/domain/types';
 
@@ -23,6 +25,7 @@
   let storageIssue: StorageIssue | null = null;
   let storageNotice = '';
   let changeNotice = '';
+  let removedEntry: RemovedEntry | null = null;
 
   $: project = db.projects.find((item) => item.id === db.activeProjectId) ?? db.projects[0];
   $: scenario = project?.scenarios.find((item) => item.id === project.selectedId) ?? project?.scenarios[0];
@@ -48,9 +51,10 @@
     storageNotice = 'Eine neue Beispielinsel wurde angelegt.';
   }
 
-  function commit(feedbackLabel = '', previous = result) {
+  function commit(feedbackLabel = '', previous = result, preserveUndo = false) {
     db = { ...db };
     save(db);
+    if (!preserveUndo) removedEntry = null;
     if (feedbackLabel && previous) {
       const after = calculateScenario({ scenario, buildings: projectBuildings, goods: GOODS, settings: db.settings, era: project.era });
       changeNotice = describeIslandChange(previous, after, feedbackLabel);
@@ -109,9 +113,20 @@
 
   function removeBuilding(id: string) {
     const previous = result;
-    const removed = scenario.entries.find((entry) => entry.id === id);
-    scenario.entries = scenario.entries.filter((entry) => entry.id !== id);
-    commit(`${removed ? building(removed.buildingId).name : 'Gebäude'} entfernt`, previous);
+    const removal = removeEntry(scenario.entries, id);
+    if (!removal.removed) return;
+    removedEntry = removal.removed;
+    scenario.entries = removal.entries;
+    commit(`${building(removal.removed.entry.buildingId).name} entfernt`, previous, true);
+  }
+
+  function undoRemoveBuilding() {
+    if (!removedEntry) return;
+    const previous = result;
+    const name = building(removedEntry.entry.buildingId).name;
+    scenario.entries = restoreEntry(scenario.entries, removedEntry);
+    removedEntry = null;
+    commit(`${name} wiederhergestellt`, previous);
   }
 
   function buildingOptions(entry: Entry) {
@@ -211,7 +226,7 @@
 
     <section class="content">
       {#if storageNotice}<p class="storage-notice" role="status">{storageNotice}</p>{/if}
-      {#if changeNotice}<p class="change-notice" role="status"><span>{changeNotice}</span><button aria-label="Rückmeldung schließen" onclick={() => (changeNotice = '')}>×</button></p>{/if}
+      {#if changeNotice}<div class="change-notice" role="status"><span>{changeNotice}</span><div>{#if removedEntry}<button class="undo" onclick={undoRemoveBuilding}>Rückgängig</button>{/if}<button class="dismiss" aria-label="Rückmeldung schließen" onclick={() => { changeNotice = ''; removedEntry = null; }}>×</button></div></div>{/if}
       {#if tab === 'overview'}
         <div class="page-header">
           <div>
@@ -303,7 +318,10 @@
   .content { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 42px 0; }
   .storage-notice { margin: -20px 0 20px; padding: 11px 14px; border-left: 4px solid #3f7d55; border-radius: 4px; background: #eff8f1; color: #315941; font-weight: 650; }
   .change-notice { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: -20px 0 20px; padding: 11px 14px; border-left: 4px solid #3f7d55; border-radius: 4px; background: #eff8f1; color: #315941; font-weight: 650; }
-  .change-notice button { width: 28px; height: 28px; flex: 0 0 auto; border-radius: 50%; background: transparent; color: #315941; font-size: 20px; }
+  .change-notice > div { display: flex; align-items: center; gap: 8px; }
+  .change-notice button { min-height: 30px; flex: 0 0 auto; background: transparent; color: #315941; }
+  .change-notice .undo { padding: 0 10px; border: 1px solid #50755c; border-radius: 4px; font-weight: 750; }
+  .change-notice .dismiss { width: 28px; border-radius: 50%; font-size: 20px; }
   .change-notice button:hover, .change-notice button:focus-visible { background: #dbeedf; outline: 2px solid #315941; }
   .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
   h1 { margin: 0; font-size: 30px; line-height: 1.2; }

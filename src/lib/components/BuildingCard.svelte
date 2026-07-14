@@ -17,6 +17,7 @@
   export let onRemove: () => void;
 
   let expanded = false;
+  let actionsOpen = false;
   const statusLabel = (status: Entry['status']) => ({ existing: 'Gebaut', planned: 'Geplant', disabled: 'Deaktiviert' })[status];
 </script>
 
@@ -26,7 +27,10 @@
       <span class="icon" aria-hidden="true">{building.icon}</span>
       <div><span class={`status ${entry.status}`}>{statusLabel(entry.status)}</span><h2>{building.name}</h2><p>{building.modes.find((mode) => mode.id === entry.modeId)?.name ?? building.modes[0].name}</p></div>
     </div>
-    <button class="remove" aria-label={`${building.name} löschen`} onclick={onRemove}>Löschen</button>
+    <div class="card-actions">
+      <button class="more" aria-label={`Weitere Aktionen für ${building.name}`} aria-expanded={actionsOpen} onclick={() => (actionsOpen = !actionsOpen)}>•••</button>
+      {#if actionsOpen}<div class="actions-menu"><button onclick={() => { actionsOpen = false; onRemove(); }}>Gebäude entfernen</button></div>{/if}
+    </div>
   </header>
 
   <div class="result" class:shortage={Boolean(supplyAction)}>
@@ -53,7 +57,7 @@
 <style>
   .building-card { overflow: hidden; border: 1px solid #d1c3a6; border-radius: 11px; background: #fff9ed; box-shadow: 0 5px 16px rgb(65 53 28 / 9%); }
   .building-card.disabled { opacity: .66; }
-  header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 16px 16px 12px; }
+  header { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 16px 16px 12px; }
   .identity { display: flex; min-width: 0; align-items: center; gap: 12px; }
   .icon { display: grid; width: 46px; height: 46px; flex: 0 0 auto; place-items: center; border-radius: 10px; background: #eadcbd; font-size: 27px; }
   h2 { margin: 3px 0 0; color: #2b2925; font-size: 18px; }
@@ -62,7 +66,12 @@
   .status.planned { color: #94651f; }
   .status.disabled { color: #777; }
   button { border: 0; cursor: pointer; font: inherit; }
-  .remove { padding: 4px 0; background: transparent; color: #8a3d36; font-size: 12px; }
+  .card-actions { position: relative; }
+  .more { width: 34px; height: 30px; border-radius: 5px; background: transparent; color: #6b665d; font-weight: 800; letter-spacing: 2px; }
+  .more:hover, .more:focus-visible { background: #efe5cf; outline: 2px solid #234f45; }
+  .actions-menu { position: absolute; z-index: 4; top: 34px; right: 0; width: 170px; padding: 6px; border: 1px solid #c9b994; border-radius: 6px; background: #fff9ed; box-shadow: 0 8px 22px rgb(65 53 28 / 18%); }
+  .actions-menu button { width: 100%; min-height: 36px; padding: 0 9px; border-radius: 4px; background: transparent; color: #8a3d36; text-align: left; }
+  .actions-menu button:hover, .actions-menu button:focus-visible { background: #fff0eb; outline: 2px solid #8a3d36; }
   .result { min-height: 104px; margin: 0 16px; padding: 14px; border-left: 4px solid #3f7d55; border-radius: 5px; background: #eef7ef; }
   .result.shortage { border-left-color: #d4942a; background: #fff3d8; }
   .result > span { display: block; color: #59645e; font-size: 11px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
