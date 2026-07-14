@@ -163,6 +163,52 @@ export function supplyActionForEntry(result: ReturnType<typeof calculateScenario
   };
 }
 
+export type PlayerAction =
+  | { kind: 'supply'; title: string; detail: string; entryId: string; buildingId: string; count: number }
+  | { kind: 'teamster'; title: string; detail: string; buildingId: 'teamster-office'; count: number }
+  | { kind: 'staffing'; title: string; detail: string }
+  | { kind: 'data'; title: string; detail: string }
+  | { kind: 'stable'; title: string; detail: string };
+
+export function nextPlayerActions(result: ReturnType<typeof calculateScenario>): PlayerAction[] {
+  const actions: PlayerAction[] = [];
+  for (const chain of result.chainSummaries.filter((item) => item.utilization < .999)) {
+    const supply = supplyActionForEntry(result, chain.entryId);
+    if (!supply) continue;
+    actions.push({
+      kind: 'supply',
+      title: `${supply.count} × ${supply.buildingName} einplanen`,
+      detail: `${chain.buildingName} erreicht damit rechnerisch wieder die volle Rohstoffversorgung.`,
+      entryId: chain.entryId,
+      buildingId: supply.buildingId,
+      count: supply.count
+    });
+  }
+  if (result.teamsterOfficeDifference > 0) actions.push({
+    kind: 'teamster',
+    title: `${result.teamsterOfficeDifference} × Fuhrunternehmen einplanen`,
+    detail: 'Die theoretische Transportkapazität liegt unter dem Warenaufkommen.',
+    buildingId: 'teamster-office',
+    count: result.teamsterOfficeDifference
+  });
+  if (result.openJobs > .01) actions.push({
+    kind: 'staffing',
+    title: `${fmt(result.openJobs, 0)} offene Arbeitsplätze besetzen`,
+    detail: 'Unbesetzte Stellen senken die erwartete Produktion deiner Insel.'
+  });
+  if (result.unknownEntries > 0) actions.push({
+    kind: 'data',
+    title: `${fmt(result.unknownEntries, 0)} unberechenbare Gebäude prüfen`,
+    detail: 'Für diese Gebäude fehlen noch belastbare Produktionswerte.'
+  });
+  if (!actions.length) actions.push({
+    kind: 'stable',
+    title: 'Keine dringende Aktion',
+    detail: 'Unter den gewählten Annahmen ist deine erfasste Produktion stabil.'
+  });
+  return actions.slice(0, 3);
+}
+
 export function goalRequirements(buildingId:string,count:number,modeId:string,buildings:Building[],settings:Settings,goods:Record<string,{name:string}>={}) {
   const rows:{buildingId:string;name:string;icon:string;exact:number;recommended:number;reason:string;level:number;status:string}[]=[];
   const visit=(id:string,amount:number,selectedMode:string|undefined,level:number,reason:string)=>{

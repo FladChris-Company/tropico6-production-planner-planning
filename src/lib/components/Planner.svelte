@@ -2,12 +2,14 @@
   import { onMount } from 'svelte';
   import BuildingCard from './BuildingCard.svelte';
   import BuildingPicker from './BuildingPicker.svelte';
+  import NextActions from './NextActions.svelte';
   import ProjectBackup from './ProjectBackup.svelte';
   import ProductionGoalPlanner from './ProductionGoalPlanner.svelte';
   import StorageRecovery from './StorageRecovery.svelte';
   import Tip from './Tip.svelte';
   import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra, describeDataStatus, missingCalculationLabel, withDataStatusIndicator } from '$lib/domain/data';
-  import { calculateEntryPerformance, calculateScenario, fmt, supplyActionForEntry } from '$lib/domain/core';
+  import { calculateEntryPerformance, calculateScenario, fmt, nextPlayerActions, supplyActionForEntry } from '$lib/domain/core';
+  import type { PlayerAction } from '$lib/domain/core';
   import { load, newEntry, save, seed } from '$lib/domain/storage';
   import type { StorageIssue } from '$lib/domain/storage';
   import type { Database, Entry } from '$lib/domain/types';
@@ -26,6 +28,7 @@
   $: selectableBuildings = projectBuildings.filter((item) => buildingAvailableInEra(item, project?.era ?? 'colonial'));
   $: result = scenario ? calculateScenario({ scenario, buildings: projectBuildings, goods: GOODS, settings: db.settings, era: project?.era }) : null;
   $: exportableGoods = result ? result.balances.filter((item) => item.exportable > .01).sort((a,b) => b.exportable - a.exportable) : [];
+  $: playerActions = result ? nextPlayerActions(result) : [];
 
   onMount(() => {
     const stored = load();
@@ -72,6 +75,19 @@
 
   function planSupply(entry: Entry, action: NonNullable<ReturnType<typeof supplyActionForEntry>>) {
     addBuilding(action.buildingId, 'planned', action.count, entry.clusterId);
+  }
+
+  function runPlayerAction(action: PlayerAction) {
+    if (action.kind === 'supply') {
+      const entry = scenario.entries.find((item) => item.id === action.entryId);
+      addBuilding(action.buildingId, 'planned', action.count, entry?.clusterId ?? scenario.clusters[0].id);
+      return;
+    }
+    if (action.kind === 'teamster') {
+      addBuilding(action.buildingId, 'planned', action.count);
+      return;
+    }
+    tab = 'buildings';
   }
 
   function changeBuilding(entry: Entry) {
@@ -195,14 +211,7 @@
           </div>
         </div>
 
-        <section class:error={result.diagnostics[0].severity === 'error'} class:warning={result.diagnostics[0].severity === 'warning'} class="priority">
-          <div>
-            <span>Was jetzt wichtig ist</span>
-            <h2>{result.diagnostics[0].title}</h2>
-            <p>{result.diagnostics[0].detail}</p>
-          </div>
-          {#if result.diagnostics[0].severity !== 'success'}<button onclick={() => (tab = 'buildings')}>Gebäude prüfen</button>{/if}
-        </section>
+        <NextActions actions={playerActions} onAction={runPlayerAction} />
 
         <div class="overview-grid">
           <section class="summary surplus-summary">
@@ -292,13 +301,6 @@
   .add-button:hover { background: #a93c28; }
   .add-button:disabled { border-color: #aeb7bc; background: #aeb7bc; cursor: not-allowed; }
   .overview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-  .priority { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 18px; padding: 20px 22px; border-left: 5px solid #3f7d55; border-radius: 8px; background: #eff8f1; box-shadow: 0 4px 14px rgb(65 53 28 / 8%); }
-  .priority.warning { border-left-color: #d4942a; background: #fff4dd; }
-  .priority.error { border-left-color: #b83a32; background: #fff0eb; }
-  .priority span { color: #6b665d; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
-  .priority h2 { margin: 4px 0 0; font-size: 21px; }
-  .priority p { line-height: 1.45; }
-  .priority button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; border-radius: 5px; background: #234f45; color: #fff; font-weight: 700; }
   .summary { min-height: 220px; padding: 20px; border: 1px solid #d1c3a6; border-radius: 10px; background: #fff9ed; box-shadow: 0 4px 14px rgb(65 53 28 / 7%); }
   .summary h2 { margin: 0 0 16px; font-size: 17px; }
   .summary p { line-height: 1.45; }
@@ -342,8 +344,6 @@
     .page-header { align-items: stretch; flex-direction: column; }
     .add-button { width: 100%; }
     .overview-grid { grid-template-columns: 1fr; }
-    .priority { align-items: stretch; flex-direction: column; }
-    .priority button { width: 100%; }
     .building-grid { grid-template-columns: 1fr; }
   }
 </style>

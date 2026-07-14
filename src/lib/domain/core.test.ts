@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BUILDINGS, DEFAULT_SETTINGS, GOODS, buildingAvailableInEra } from './data';
-import { buildGoalPlan, calculateEntryPerformance, calculateScenario, goalRequirements, supplyActionForEntry } from './core';
+import { buildGoalPlan, calculateEntryPerformance, calculateScenario, goalRequirements, nextPlayerActions, supplyActionForEntry } from './core';
 import type { Entry, Scenario } from './types';
 
 const entry=(id:string,buildingId:string,count:number,modeId='standard',status:Entry['status']='existing'):Entry=>({id,clusterId:'main',buildingId,modeId,count,efficiency:100,staffing:100,distance:'',status,note:'',rateOverrides:{inputs:{},outputs:{}}});
@@ -34,6 +34,18 @@ describe('Kolonialzeit-Berechnung',()=>{
       goodId:'sugar',
       count:2
     });
+  });
+
+  it('priorisiert höchstens drei konkrete nächste Schritte für den Spieler',()=>{
+    const understaffed=entry('sugar','plantation-sugar',1);
+    understaffed.staffing=50;
+    const result=calculate([understaffed,entry('rum','rum-distillery',2,'dunder')]);
+
+    expect(nextPlayerActions(result)).toEqual([
+      expect.objectContaining({kind:'supply',title:'2 × Zuckerplantage einplanen',entryId:'rum'}),
+      expect.objectContaining({kind:'teamster',title:'7 × Fuhrunternehmen einplanen'}),
+      expect.objectContaining({kind:'staffing',title:'4 offene Arbeitsplätze besetzen'})
+    ]);
   });
 
   it('berücksichtigt Besetzung und Erwartungsprofil',()=>{
