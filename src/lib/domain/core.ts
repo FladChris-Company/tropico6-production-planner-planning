@@ -23,7 +23,7 @@ function rates(entry:Prepared['entry'], mode:Building['modes'][number]) {
 export function calculateEntryPerformance({entry,building,era='colonial',settings}:{entry:Entry;building:Building;era?:Era;settings:Settings}) {
   const mode=building.modes.find(item=>item.id===entry.modeId)??building.modes[0];
   const normalized=rates(entry,mode);
-  const calculable=[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(value=>value!=null&&Number.isFinite(Number(value)));
+  const calculable=Object.keys(normalized.outputs).length>0&&[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(value=>value!=null&&Number.isFinite(Number(value)));
   const count=Math.max(0,Number(entry.count)||0);
   const efficiency=clamp(entry.efficiency,0,500)/100;
   const factor=count*building.workers*efficiency;
@@ -69,7 +69,7 @@ export function calculateScenario({scenario,buildings,goods,settings,era='coloni
     const mode=building.modes.find(m=>m.id===entry.modeId)??building.modes[0];
     const count=Math.max(0,Number(entry.count)||0), efficiency=clamp(entry.efficiency,0,500)/100, staffing=clamp(entry.staffing,0,100)/100;
     const normalized=rates(entry,mode) as {inputs:Rates;outputs:Rates};
-    const calculable=[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(v=>v!=null&&Number.isFinite(Number(v)));
+    const calculable=Object.keys(normalized.outputs).length>0&&[...Object.values(normalized.inputs),...Object.values(normalized.outputs)].every(v=>v!=null&&Number.isFinite(Number(v)));
     const performance=calculateEntryPerformance({entry,building,era,settings});
     totalBuildings+=count; if(entry.status==='planned') plannedBuildings+=count;
     totalJobs+=count*building.workers; filledJobs+=count*building.workers*staffing;

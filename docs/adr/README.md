@@ -20,3 +20,4 @@ ADRs halten wesentliche Entscheidungen mit Kontext, Alternativen und Folgen fest
 - [ADR-0007: Planungsrepository ohne Code](0007-planungsrepository-ohne-code.md)
 - [ADR-0008: Zielorientierte modulare Produktarchitektur](0008-zielorientierte-modulare-produktarchitektur.md)
 - [ADR-0009: Svelte-Anwendung im bisherigen Planungsrepository](0009-svelte-anwendung-im-planungsrepository.md)
+- [ADR-0010: Manuelle CSV-Dateien als Wissensquelle](0010-manuelle-csv-als-wissensquelle.md)

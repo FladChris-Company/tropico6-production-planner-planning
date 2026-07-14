@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "data:generate": "node scripts/generate-colonial-data.mjs",
+    "data:check": "node scripts/generate-colonial-data.mjs --check",
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",

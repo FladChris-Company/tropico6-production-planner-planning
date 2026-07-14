@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import CalculationPopover from './CalculationPopover.svelte';
   import Tip from './Tip.svelte';
-  import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra } from '$lib/domain/data';
+  import { BUILDINGS, ERAS, GOODS, buildingAvailableInEra, describeDataStatus } from '$lib/domain/data';
   import { calculateEntryPerformance, calculateScenario, fmt } from '$lib/domain/core';
   import { load, newEntry, save, seed } from '$lib/domain/storage';
   import type { Database, Entry } from '$lib/domain/types';
@@ -109,7 +109,7 @@
       formula:[`${fmt(entry.count,0)} ${unit} × ${fmt(Number(rate)*selected.workers)} ${GOODS[good]?.name??good} × ${fmt(entry.efficiency,0)} %`],
       result:`= ${fmt(Number(rate)*selected.workers*entry.count*entry.efficiency/100)} ${GOODS[good]?.name??good}`
     }));
-    const dataNote = selected.dataStatus === 'verified' ? 'Datengrundlage: bestätigte Spieldaten.' : 'Datengrundlage: derzeitiger Schätzwert.';
+    const dataNote = describeDataStatus(selected.dataStatus);
     return {
       label:[inputLabel,outputLabel].filter(Boolean).join(' → '),
       blocks:[...blocks(value.mode.inputs,'Verbrauch'),...blocks(value.mode.outputs,'Produktion')],

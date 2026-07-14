@@ -70,3 +70,16 @@ EINSCHRÄNKUNGEN
 - Eine vollständige öffentliche Quelle für sämtliche Verbesserungen,
   Budgetstufen und DLC-Produktionsraten wurde nicht gefunden.
 - Unbekannte Daten wurden bewusst leer gelassen und gekennzeichnet.
+
+VERWENDUNG IN DER ANWENDUNG
+- Dieser Ordner ist die gepflegte Wissensquelle für die Tropico-6-Stammdaten.
+- Der Kolonialzeit-MVP verwendet derzeit gebaeude.csv, produktionsrezepte.csv,
+  waren.csv, arbeitsmodi.csv und quellen.csv für die Laufzeitdaten.
+- Änderungen werden mit `npm run data:generate` in die generierte JSON-Datei
+  übertragen und mit `npm run data:check` auf Aktualität geprüft.
+- Die Datei src/lib/domain/generated/colonial-data.json wird nicht manuell
+  bearbeitet.
+- Gemessene Ratenpunkte je Arbeiter-Arbeitstag werden mit 1.000 in sichtbare
+  Warenbestands-Einheiten umgerechnet.
+- Testchargen ohne normierte Zeitbasis und unbekannte Werte bleiben
+  unberechenbar; sie werden nicht als Nullproduktion behandelt.

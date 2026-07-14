@@ -66,6 +66,12 @@ Der Planer soll nicht nur Zahlen zeigen, sondern typische Fragen während einer 
 
 Inseln und Prognosen werden aktuell automatisch im lokalen Speicher des jeweiligen Browsers gespeichert. Sie sind nicht öffentlich sichtbar und werden nicht an einen Server übertragen. Eine Sicherung per JSON-Export ist geplant, aber in der Minimaloberfläche noch nicht verfügbar.
 
+## Spieldaten für den Kolonialzeit-MVP
+
+Die CSV-Dateien unter `manual/` sind die gepflegte Wissensquelle für Gebäude, Waren, Produktionsrezepte, Arbeitsmodi und Quellen. Ein validierter Generator erzeugt daraus die von der Anwendung verwendeten Kolonialdaten in `src/lib/domain/generated/colonial-data.json`.
+
+Gemessene Raten je Arbeiter-Arbeitstag werden in Warenbestands-Einheiten umgerechnet. Ein Ratenpunkt entspricht dabei 1.000 Warenbestands-Einheiten. Nicht normierte Testchargen und unbekannte Werte bleiben sichtbar unberechenbar.
+
 ## Lokale Entwicklung
 
 Voraussetzung ist Node.js 22.
@@ -78,9 +84,16 @@ npm run dev
 Qualitätsprüfung und Produktions-Build:
 
 ```text
+npm run data:check
 npm run check
 npm test
 npm run build
+```
+
+Nach einer Änderung der verwendeten CSV-Wissensquelle:
+
+```text
+npm run data:generate
 ```
 
 ## Dokumentation

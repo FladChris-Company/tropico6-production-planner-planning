@@ -1,4 +1,4 @@
-export type DataStatus = 'verified' | 'estimated' | 'unknown' | 'model';
+export type DataStatus = 'verified' | 'measured' | 'estimated' | 'unknown' | 'model';
 export type EntryStatus = 'existing' | 'planned' | 'disabled';
 export type Severity = 'success' | 'warning' | 'error';
 export type Era = 'colonial' | 'world-wars' | 'cold-war' | 'modern';
@@ -6,6 +6,7 @@ export type Era = 'colonial' | 'world-wars' | 'cold-war' | 'modern';
 export interface Mode {
   id: string;
   name: string;
+  availableFrom?: Era;
   inputs: Record<string, number | null>;
   outputs: Record<string, number | null>;
 }

@@ -1,0 +1,1929 @@
+{
+  "schema": 1,
+  "scope": "colonial",
+  "rateUnit": "inventory-units-per-worker-workday",
+  "rateScale": 1000,
+  "source": {
+    "files": [
+      "manual/gebaeude.csv",
+      "manual/produktionsrezepte.csv",
+      "manual/waren.csv",
+      "manual/arbeitsmodi.csv",
+      "manual/quellen.csv"
+    ],
+    "colonialBuildingRows": 54,
+    "colonialRecipeRows": 42,
+    "colonialModeRows": 42,
+    "runtimeBuildings": 69
+  },
+  "sources": [
+    {
+      "id": "wiki_buildings",
+      "title": "Buildings (Tropico 6) – Tropico Wiki",
+      "url": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "usedFor": "Gebäudeliste, Zeitalter, Kategorien, DLC-Fußnoten, Kosten, Strom, Arbeitsplätze, Bildung, Größen, Wohn- und Dienstleistungswerte, Sonderobjekte",
+      "type": "Community-Wiki / offizielle Tropico-Wiki auf Fandom",
+      "reliability": "hoch für Tabellenwerte, aber nicht offizielle Spieldatei",
+      "retrievedAt": "2026-07-13"
+    },
+    {
+      "id": "steam_industry_profits",
+      "title": "Industry Profits – Steam Community Guide",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "usedFor": "Gemessene Produktionsmengen je Arbeiter und Arbeitstag bei 100 % Effizienz",
+      "type": "Community-Messung",
+      "reliability": "mittel; empirisch, nicht offizielle interne Formel",
+      "retrievedAt": "2026-07-13"
+    },
+    {
+      "id": "github_planner",
+      "title": "AI-Repository script.js – productionChains",
+      "url": "https://github.com/LosLebos/AI-Repository/blob/tropico-planner-stage1/script.js",
+      "usedFor": "Strukturierte Übernahme der bereits erfassten Produktionsmesswerte",
+      "type": "Nutzerrepository / abgeleiteter Datensatz",
+      "reliability": "abhängig von Steam-Guide und manueller Übertragung",
+      "retrievedAt": "2026-07-13"
+    },
+    {
+      "id": "toy_wiki",
+      "title": "Toy Workshop – Tropico Wiki",
+      "url": "https://tropico.fandom.com/wiki/Toy_Workshop",
+      "usedFor": "Spielzeugfabrik-Grunddaten, bekannte Verbesserungen und Budgetstufen",
+      "type": "Community-Wiki",
+      "reliability": "mittel bis hoch",
+      "retrievedAt": "2026-07-13"
+    },
+    {
+      "id": "toy_test",
+      "title": "Toy Workshop production discussion",
+      "url": "https://steamcommunity.com/app/492720/discussions/0/3388420307307354120/",
+      "usedFor": "Empirische Testchargen der vier Spielzeug-Arbeitsmodi",
+      "type": "Community-Test",
+      "reliability": "mittel bis niedrig; Testbedingungen nicht vollständig dokumentiert",
+      "retrievedAt": "2026-07-13"
+    }
+  ],
+  "goods": [
+    {
+      "id": "aluminium",
+      "name": "Aluminium",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "apparel",
+      "name": "Kleidung",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "banana",
+      "name": "Bananen",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "boat",
+      "name": "Boote",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "canned_goods",
+      "name": "Konserven",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "car",
+      "name": "Autos",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "cheese",
+      "name": "Käse",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "chocolate",
+      "name": "Schokolade",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "cigars",
+      "name": "Zigarren",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "cloth",
+      "name": "Stoff",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "coal",
+      "name": "Kohle",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "cocoa",
+      "name": "Kakao",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "coconut",
+      "name": "Kokosnüsse",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "coffee",
+      "name": "Kaffee",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "corn",
+      "name": "Mais",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "cotton",
+      "name": "Baumwolle",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "electronics",
+      "name": "Elektronik",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "fish",
+      "name": "Fisch",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "furniture",
+      "name": "Möbel",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "gold",
+      "name": "Gold",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "hides",
+      "name": "Häute",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "iron",
+      "name": "Eisen",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "jewelry",
+      "name": "Schmuck",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "juice",
+      "name": "Saft",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "leather",
+      "name": "Leder",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "logs",
+      "name": "Baumstämme",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "meat",
+      "name": "Fleisch",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "milk",
+      "name": "Milch",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "nickel",
+      "name": "Nickel",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "oil",
+      "name": "Öl",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "pharmaceuticals",
+      "name": "Pharmazeutika",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "pineapple",
+      "name": "Ananas",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "planks",
+      "name": "Bretter",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "plastics",
+      "name": "Kunststoffe",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "rubber",
+      "name": "Gummi",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "rum",
+      "name": "Rum",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "shellfish",
+      "name": "Schalentiere",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "steel",
+      "name": "Stahl",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "sugar",
+      "name": "Zucker",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "tobacco",
+      "name": "Tabak",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "toys",
+      "name": "Spielzeug",
+      "source": "https://tropico.fandom.com/wiki/Toy_Workshop"
+    },
+    {
+      "id": "uranium",
+      "name": "Uran",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "weapons",
+      "name": "Waffen",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    },
+    {
+      "id": "wool",
+      "name": "Wolle",
+      "source": "https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953"
+    }
+  ],
+  "buildings": [
+    {
+      "id": "dock",
+      "name": "Hafen",
+      "icon": "•",
+      "category": "Verkehr und Infrastruktur",
+      "dlc": "base",
+      "workers": 6,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "construction-office",
+      "name": "Bauunternehmen",
+      "icon": "•",
+      "category": "Verkehr und Infrastruktur",
+      "dlc": "base",
+      "workers": 6,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "teamster-office",
+      "name": "Fuhrunternehmen",
+      "icon": "🐎",
+      "category": "Verkehr und Infrastruktur",
+      "dlc": "base",
+      "workers": 6,
+      "education": "uneducated",
+      "kind": "teamster",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "landing",
+      "name": "Anlegestelle",
+      "icon": "•",
+      "category": "Verkehr und Infrastruktur",
+      "dlc": "base",
+      "workers": 0,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "teamster-port",
+      "name": "Fuhrhafen",
+      "icon": "•",
+      "category": "Verkehr und Infrastruktur",
+      "dlc": "base",
+      "workers": 6,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "warehouse",
+      "name": "Lagerhaus",
+      "icon": "•",
+      "category": "Verkehr und Infrastruktur",
+      "dlc": "base",
+      "workers": 0,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "trading-post",
+      "name": "Handelsposten",
+      "icon": "•",
+      "category": "Verkehr und Infrastruktur",
+      "dlc": "base",
+      "workers": 0,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "lighthouse",
+      "name": "Leuchtturm",
+      "icon": "•",
+      "category": "Verkehr und Infrastruktur",
+      "dlc": "tropican-shores",
+      "workers": 1,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "artificial-coral-reef",
+      "name": "Künstliches Korallenriff",
+      "icon": "•",
+      "category": "Verkehr und Infrastruktur",
+      "dlc": "tropican-shores",
+      "workers": 0,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "coconut-harvester",
+      "name": "Kokosnussernter",
+      "icon": "•",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 6,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "unknown",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "unknown",
+          "name": "Unbekannt",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "logging-camp",
+      "name": "Holzfällerlager",
+      "icon": "•",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 6,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "unknown",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "unknown",
+          "name": "Unbekannt",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "fishermen-wharf",
+      "name": "Fischereihafen",
+      "icon": "•",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 5,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "unknown",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "unknown",
+          "name": "Unbekannt",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "plantation-corn",
+      "name": "Maisplantage",
+      "icon": "🌽",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 8,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "corn": 2000
+          }
+        }
+      ]
+    },
+    {
+      "id": "plantation-banana",
+      "name": "Bananenplantage",
+      "icon": "🍌",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 8,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "banana": 2500
+          }
+        }
+      ]
+    },
+    {
+      "id": "plantation-pineapple",
+      "name": "Ananasplantage",
+      "icon": "🍍",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 8,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "pineapple": 2500
+          }
+        }
+      ]
+    },
+    {
+      "id": "plantation-sugar",
+      "name": "Zuckerplantage",
+      "icon": "🧊",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 8,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "sugar": 1500
+          }
+        }
+      ]
+    },
+    {
+      "id": "plantation-cocoa",
+      "name": "Kakaoplantage",
+      "icon": "🫘",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 8,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "cocoa": 1000
+          }
+        }
+      ]
+    },
+    {
+      "id": "plantation-tobacco",
+      "name": "Tabakplantage",
+      "icon": "🍂",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 8,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "tobacco": 1800
+          }
+        }
+      ]
+    },
+    {
+      "id": "plantation-coffee",
+      "name": "Kaffeeplantage",
+      "icon": "☕",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 8,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "coffee": 1000
+          }
+        }
+      ]
+    },
+    {
+      "id": "plantation-cotton",
+      "name": "Baumwolleplantage",
+      "icon": "☁️",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 8,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "cotton": 3500
+          }
+        }
+      ]
+    },
+    {
+      "id": "plantation-rubber",
+      "name": "Kautschukplantage",
+      "icon": "🌿",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 8,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "rubber": 1200
+          }
+        }
+      ]
+    },
+    {
+      "id": "manure-spreader",
+      "name": "Miststreuer",
+      "icon": "•",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 3,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "ranch-cattle",
+      "name": "Rinderfarm",
+      "icon": "🥩",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "meat": 1500,
+            "hides": 2000
+          }
+        }
+      ]
+    },
+    {
+      "id": "ranch-sheep",
+      "name": "Schaffarm",
+      "icon": "🐑",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "wool": 1500,
+            "milk": 500
+          }
+        }
+      ]
+    },
+    {
+      "id": "ranch-crocodile",
+      "name": "Krokodilfarm",
+      "icon": "👢",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "leather": 800
+          }
+        }
+      ]
+    },
+    {
+      "id": "ranch-pig",
+      "name": "Schweinefarm",
+      "icon": "🥩",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "meat": 2000
+          }
+        }
+      ]
+    },
+    {
+      "id": "ranch-llama",
+      "name": "Lamafarm",
+      "icon": "🐑",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "wool": 2000
+          }
+        }
+      ]
+    },
+    {
+      "id": "ranch-goat",
+      "name": "Ziegenfarm",
+      "icon": "🥛",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "milk": 2000
+          }
+        }
+      ]
+    },
+    {
+      "id": "mine-coal",
+      "name": "Kohlemine",
+      "icon": "⬛",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 5,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "coal": 2000
+          }
+        }
+      ]
+    },
+    {
+      "id": "mine-iron",
+      "name": "Eisenmine",
+      "icon": "⛏️",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 5,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "iron": 2000
+          }
+        }
+      ]
+    },
+    {
+      "id": "mine-gold",
+      "name": "Goldmine",
+      "icon": "🟨",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "base",
+      "workers": 5,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {
+            "gold": 600
+          }
+        }
+      ]
+    },
+    {
+      "id": "pearl-divers",
+      "name": "Perlentaucher",
+      "icon": "•",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "tropican-shores",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "unknown",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "unknown",
+          "name": "Unbekannt",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "beekeeper",
+      "name": "Imkerei",
+      "icon": "•",
+      "category": "Nahrung und Rohstoffe",
+      "dlc": "return-to-nature",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "unknown",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "unknown",
+          "name": "Unbekannt",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "lumber-mill",
+      "name": "Sägewerk",
+      "icon": "🪚",
+      "category": "Industrie",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 1,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "normal",
+          "name": "Normalbetrieb",
+          "availableFrom": "colonial",
+          "inputs": {
+            "logs": 4000
+          },
+          "outputs": {
+            "planks": 10000
+          }
+        },
+        {
+          "id": "hasty",
+          "name": "Hastiges Entrinden",
+          "availableFrom": "colonial",
+          "inputs": {
+            "logs": 6800
+          },
+          "outputs": {
+            "planks": 13000
+          }
+        }
+      ]
+    },
+    {
+      "id": "rum-distillery",
+      "name": "Rumbrennerei",
+      "icon": "🍾",
+      "category": "Industrie",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 1,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "normal",
+          "name": "Normalbetrieb",
+          "availableFrom": "colonial",
+          "inputs": {
+            "sugar": 6800
+          },
+          "outputs": {
+            "rum": 3500
+          }
+        },
+        {
+          "id": "dunder",
+          "name": "Dunder-Destille",
+          "availableFrom": "colonial",
+          "inputs": {
+            "sugar": 5100
+          },
+          "outputs": {
+            "rum": 3500
+          }
+        }
+      ]
+    },
+    {
+      "id": "tannery",
+      "name": "Gerberei",
+      "icon": "👢",
+      "category": "Industrie",
+      "dlc": "base",
+      "workers": 5,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 1,
+      "dataStatus": "measured",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/sharedfiles/filedetails/?id=1720095953",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "normal",
+          "name": "Normalbetrieb",
+          "availableFrom": "colonial",
+          "inputs": {
+            "hides": 3650
+          },
+          "outputs": {
+            "leather": 1825
+          }
+        },
+        {
+          "id": "chrome",
+          "name": "Chromgerbung",
+          "availableFrom": "colonial",
+          "inputs": {
+            "hides": 2725
+          },
+          "outputs": {
+            "leather": 1825
+          }
+        }
+      ]
+    },
+    {
+      "id": "toy-workshop",
+      "name": "Spielzeugfabrik",
+      "icon": "🧸",
+      "category": "Industrie",
+      "dlc": "llama",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 1,
+      "dataStatus": "unknown",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6) · https://steamcommunity.com/app/492720/discussions/0/3388420307307354120/",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "wooden",
+          "name": "Holzspielzeug",
+          "availableFrom": "colonial",
+          "inputs": {
+            "logs": null
+          },
+          "outputs": {
+            "toys": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "fireworks-factory",
+      "name": "Feuerwerksfabrik",
+      "icon": "•",
+      "category": "Industrie",
+      "dlc": "festival",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "unknown",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "unknown",
+          "name": "Unbekannt",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "charcoal-burner",
+      "name": "Köhlerei",
+      "icon": "•",
+      "category": "Industrie",
+      "dlc": "return-to-nature",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "unknown",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "unknown",
+          "name": "Unbekannt",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "paper-mill",
+      "name": "Papierfabrik",
+      "icon": "•",
+      "category": "Industrie",
+      "dlc": "return-to-nature",
+      "workers": 5,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 0,
+      "dataStatus": "unknown",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "unknown",
+          "name": "Unbekannt",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "printing-house",
+      "name": "Druckerei",
+      "icon": "•",
+      "category": "Industrie",
+      "dlc": "return-to-nature",
+      "workers": 5,
+      "education": "uneducated",
+      "kind": "production",
+      "stage": 2,
+      "dataStatus": "unknown",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "unknown",
+          "name": "Unbekannt",
+          "availableFrom": "colonial",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "country-house",
+      "name": "Landhaus",
+      "icon": "•",
+      "category": "Wohnen",
+      "dlc": "base",
+      "workers": 0,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "bunkhouse",
+      "name": "Baracke",
+      "icon": "•",
+      "category": "Wohnen",
+      "dlc": "base",
+      "workers": 0,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "mansion",
+      "name": "Villa",
+      "icon": "•",
+      "category": "Wohnen",
+      "dlc": "base",
+      "workers": 0,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "residential-boat",
+      "name": "Wohnboot",
+      "icon": "•",
+      "category": "Wohnen",
+      "dlc": "tropican-shores",
+      "workers": 0,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "tree-house",
+      "name": "Baumhaus",
+      "icon": "•",
+      "category": "Wohnen",
+      "dlc": "return-to-nature",
+      "workers": 0,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "tavern",
+      "name": "Taverne",
+      "icon": "•",
+      "category": "Unterhaltung",
+      "dlc": "base",
+      "workers": 3,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "circus",
+      "name": "Zirkus",
+      "icon": "•",
+      "category": "Unterhaltung",
+      "dlc": "base",
+      "workers": 6,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "busker",
+      "name": "Straßenmusiker",
+      "icon": "•",
+      "category": "Unterhaltung",
+      "dlc": "base",
+      "workers": 1,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "custom-park",
+      "name": "Individueller Park",
+      "icon": "•",
+      "category": "Unterhaltung",
+      "dlc": "base",
+      "workers": 0,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "dance-school",
+      "name": "Tanzschule",
+      "icon": "•",
+      "category": "Unterhaltung",
+      "dlc": "festival",
+      "workers": 3,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "festival-grounds",
+      "name": "Festivalgelände",
+      "icon": "•",
+      "category": "Unterhaltung",
+      "dlc": "festival",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "theater",
+      "name": "Theater",
+      "icon": "•",
+      "category": "Luxusunterhaltung",
+      "dlc": "base",
+      "workers": 6,
+      "education": "high-school",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "opera-house",
+      "name": "Opernhaus",
+      "icon": "•",
+      "category": "Luxusunterhaltung",
+      "dlc": "base",
+      "workers": 8,
+      "education": "high-school",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "newspaper",
+      "name": "Zeitung",
+      "icon": "•",
+      "category": "Medien und Bildung",
+      "dlc": "base",
+      "workers": 4,
+      "education": "high-school",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "library",
+      "name": "Bibliothek",
+      "icon": "•",
+      "category": "Medien und Bildung",
+      "dlc": "base",
+      "workers": 3,
+      "education": "high-school",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "chapel",
+      "name": "Kapelle",
+      "icon": "•",
+      "category": "Öffentliche Dienste",
+      "dlc": "base",
+      "workers": 2,
+      "education": "high-school",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "grocery",
+      "name": "Lebensmittelladen",
+      "icon": "•",
+      "category": "Öffentliche Dienste",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "fresh-water-well",
+      "name": "Frischwasserbrunnen",
+      "icon": "•",
+      "category": "Öffentliche Dienste",
+      "dlc": "going-viral",
+      "workers": 0,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "snake-oil-salesman",
+      "name": "Quacksalber",
+      "icon": "•",
+      "category": "Öffentliche Dienste",
+      "dlc": "going-viral",
+      "workers": 3,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "isolation-center",
+      "name": "Isolationszentrum",
+      "icon": "•",
+      "category": "Öffentliche Dienste",
+      "dlc": "going-viral",
+      "workers": 3,
+      "education": "high-school",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "herbalist",
+      "name": "Kräuterkundler",
+      "icon": "•",
+      "category": "Öffentliche Dienste",
+      "dlc": "return-to-nature",
+      "workers": 1,
+      "education": "high-school",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "magazine-stand",
+      "name": "Zeitschriftenstand",
+      "icon": "•",
+      "category": "Öffentliche Dienste",
+      "dlc": "return-to-nature",
+      "workers": 1,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "wayside-shrine",
+      "name": "Wegschrein",
+      "icon": "•",
+      "category": "Öffentliche Dienste",
+      "dlc": "return-to-nature",
+      "workers": 1,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "guard-tower",
+      "name": "Wachturm",
+      "icon": "•",
+      "category": "Überfälle und Militär",
+      "dlc": "base",
+      "workers": 3,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "fort",
+      "name": "Fort",
+      "icon": "•",
+      "category": "Überfälle und Militär",
+      "dlc": "base",
+      "workers": 8,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "pirate-cove",
+      "name": "Piratenbucht",
+      "icon": "•",
+      "category": "Überfälle und Militär",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "palace",
+      "name": "Palast",
+      "icon": "•",
+      "category": "Regierung und Finanzen",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    },
+    {
+      "id": "dungeon",
+      "name": "Kerker",
+      "icon": "•",
+      "category": "Regierung und Finanzen",
+      "dlc": "base",
+      "workers": 4,
+      "education": "uneducated",
+      "kind": "infrastructure",
+      "stage": 99,
+      "dataStatus": "verified",
+      "source": "https://tropico.fandom.com/wiki/Buildings_(Tropico_6)",
+      "availableFrom": "colonial",
+      "modes": [
+        {
+          "id": "standard",
+          "name": "Standard",
+          "inputs": {},
+          "outputs": {}
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "errors": []
+  }
+}

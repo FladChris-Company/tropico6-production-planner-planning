@@ -49,18 +49,18 @@ describe('Kolonialzeit-Berechnung',()=>{
     expect(rows.map(x=>[x.buildingId,x.recommended])).toEqual([['plantation-sugar',2],['rum-distillery',1]]);
   });
 
-  it('löst eine mehrstufige Bücherkette bis zu Holzstämmen auf',()=>{
+  it('erfindet für eine unvollständig dokumentierte Bücherkette keine Vorstufen',()=>{
     const colonial=BUILDINGS.filter(x=>x.dlc==='base'||x.dlc==='return-to-nature');
-    const rows=goalRequirements('printing-house',1,'paper',colonial,DEFAULT_SETTINGS,GOODS);
-    expect(rows.map(x=>x.buildingId)).toEqual(['logging-camp','paper-mill','printing-house']);
-    expect(rows.every(x=>x.recommended>=1)).toBe(true);
+    const rows=goalRequirements('printing-house',1,'unknown',colonial,DEFAULT_SETTINGS,GOODS);
+    expect(rows.map(x=>x.buildingId)).toEqual(['printing-house']);
+    expect(rows[0].status).toBe('unknown');
   });
 
   it('lässt unbekannte Raten sichtbar unberechenbar',()=>{
     const result=calculate([entry('fish','fishermen-wharf',1,'fish')]);
     expect(result.unknownEntries).toBe(1);
     const diagnostic=result.diagnostics.find(x=>x.title.includes('ohne belastbare Rate'))!;
-    expect(diagnostic.items).toEqual(['1 × Fischereihafen · Arbeitsmodus: Fisch']);
+    expect(diagnostic.items).toEqual(['1 × Fischereihafen · Arbeitsmodus: Unbekannt']);
   });
 
   it('berechnet die kolonialzeitliche Kapazität eines Transportbüros',()=>{
@@ -76,9 +76,9 @@ describe('Kolonialzeit-Berechnung',()=>{
 
   it('zählt für den Transportbedarf nur Ausgaben und keine Fabrikeingänge doppelt',()=>{
     const result=calculate([entry('sugar','plantation-sugar',2),entry('rum','rum-distillery',1,'dunder')]);
-    expect(result.transportDemand).toBeCloseTo(38);
-    expect(result.requiredTeamsterOffices).toBe(1);
-    expect(result.teamsterOfficeDifference).toBe(1);
+    expect(result.transportDemand).toBeCloseTo(38000);
+    expect(result.requiredTeamsterOffices).toBe(7);
+    expect(result.teamsterOfficeDifference).toBe(7);
   });
 
   it('verwendet die Ladekapazität des gewählten Zeitalters',()=>{
